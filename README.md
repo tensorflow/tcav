@@ -1,18 +1,18 @@
 #  Interpretability Beyond Feature Attribution: Quantitative Testing with Concept Activation Vectors (TCAV) [ICML 2018]
 
- Been Kim, Martin Wattenberg, Justin Gilmer, Carrie Cai, James Wexler, Fernanda Viegas, Rory Sayre
+ Been Kim, Martin Wattenberg, Justin Gilmer, Carrie Cai, James Wexler, Fernanda Viegas, Rory Sayres
 
-Paper: https://arxiv.org/abs/1711.11279
+ICML Paper: https://arxiv.org/abs/1711.11279
 
 
 ## What is TCAV?
 
-Testing with Concept Activation Vectors (TCAV) [ICML '18] is a new way to understand what signals your neural networks models uses for prediction.
+Testing with Concept Activation Vectors (TCAV) is a new interpretability method to understand what signals your neural networks models uses for prediction.
 
-### What's special about TCAV as compared to other methods?
+### What's special about TCAV compared to other methods?
 Typical interpretability methods show importance weights in each input feature (e.g, pixel). TCAV instead shows importance of high level concepts (e.g., color, gender, race) for a prediction class - this is how humans communicate!
 
-Typical interpretability methods require you to have one particular image that you are interested in understanding. TCAV gives an explanation that is generally true for a class of interest, beyond one image.
+Typical interpretability methods require you to have one particular image that you are interested in understanding. TCAV gives an explanation that is generally true for a class of interest, beyond one image (global explanation).
 
 For example, for a given class, we can show how much race or gender was important for classifications in InceptionV3. Even though neither race nor gender labels were part of the training input!
 
