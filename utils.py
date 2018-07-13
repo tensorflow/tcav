@@ -160,8 +160,8 @@ def print_results(results):
   for concept in result_summary:
     if 'random' is not concept:
       i_ups = [item['i_up'] for item in result_summary[concept]]
-      print '%s: TCAV score: %.2f (+- %.2f), random was %.2f' % (
-          concept, np.mean(i_ups), np.std(i_ups), np.mean(random_i_ups))
+      print('%s: TCAV score: %.2f (+- %.2f), random was %.2f' % (
+          concept, np.mean(i_ups), np.std(i_ups), np.mean(random_i_ups)))
 
 
 def make_dir_if_not_exists(directory):
