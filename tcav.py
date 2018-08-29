@@ -28,6 +28,11 @@ import run_params
 import tensorflow as tf
 import utils
 
+try:
+    xrange          # Python 2
+except NameError:
+    xrange = range  # Python 3
+
 
 class TCAV(object):
   """TCAV object: runs TCAV for one target and a set of concepts.
