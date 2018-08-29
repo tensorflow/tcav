@@ -48,3 +48,11 @@ mytcav = tcav.TCAV(sess,
 
 results = mytcav.run()
 ```
+
+## How to run unit tests
+
+```python cav_test.py``` (requires scikit-learn and scipy installed)
+
+```python tcav_test.py```
+
+```python utils_test.py```
