@@ -18,7 +18,6 @@ limitations under the License.
 """
 import numpy as np
 import tensorflow as tf
-import os
 
 
 def create_session(timeout=10000, interactive=True):
@@ -165,6 +164,5 @@ def print_results(results):
 
 
 def make_dir_if_not_exists(directory):
-  if not os.path.exists(directory):
-    os.makedirs(directory)
-
+  if not tf.gfile.Exists(directory):
+    tf.gfile.MakeDirs(directory)
