@@ -17,13 +17,14 @@ limitations under the License.
 """ collection of various helper functions for TCAV"""
 
 from multiprocessing import dummy as multiprocessing
-import os
+import os.path
 import re
 import numpy as np
 import PIL.Image
 import scipy.stats as stats
 import tensorflow as tf
 import json
+
 # General helper functions
 
 
@@ -83,7 +84,7 @@ def load_image_from_file(filename, shape):
   Rasies:
     exception if the image was not the right shape.
   """
-  if not os.path.exists(filename):
+  if not tf.gfile.Exists(filename):
     tf.logging.error('Cannot find file: {}'.format(filename))
     return None
   try:
@@ -224,8 +225,8 @@ def process_and_load_activations(model, bottleneck_names, concepts,
   Returns:
     acts: dictionary of activations
   """
-  if not os.path.exists(acts_dir):
-    os.makedirs(acts_dir)
+  if not tf.gfile.Exists(acts_dir):
+    tf.gfile.MakeDirs(acts_dir)
   if acts is None:
     acts = {}
 
@@ -234,17 +235,17 @@ def process_and_load_activations(model, bottleneck_names, concepts,
     if concept not in acts:
       acts[concept] = {}
     # Check if the image directory exists.
-    if not os.path.exists(concept_dir):
+    if not tf.gfile.Exists(concept_dir):
       tf.logging.fatal('Image directory does not exist: {}'.format(concept_dir))
       raise ValueError('Image directory does not exist: {}'.format(concept_dir))
 
     for bottleneck_name in bottleneck_names:
       acts_path = os.path.join(acts_dir, 'acts_{}_{}'.format(
           concept, bottleneck_name))
-      if not os.path.exists(acts_path):
+      if not tf.gfile.Exists(acts_path):
         tf.logging.info('{} does not exist, Making one...'.format(acts_path))
-        img_paths = [os.path.join(concept_dir, d) for d in os.listdir(
-            concept_dir)]
+        img_paths = [os.path.join(concept_dir, d)
+                     for d in tf.gfile.ListDirectory(concept_dir)]
         get_imgs_and_acts_save(model, bottleneck_name, img_paths, acts_path,
                                model.get_image_shape()[:2],
                                max_images=max_images)
@@ -260,4 +261,3 @@ def process_and_load_activations(model, bottleneck_names, concepts,
             concept, bottleneck_name))
 
   return acts
-
