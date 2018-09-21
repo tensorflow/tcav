@@ -17,7 +17,7 @@ limitations under the License.
 
 import os
 import numpy as np
-import tensorflow.google as tf
+import tensorflow as tf
 from tensorflow.python.platform import googletest
 
 from dtcav import ConceptDiscovery
@@ -90,7 +90,8 @@ class DtcavTest(googletest.TestCase):
         cav_dir,
         max_imgs=5,
         min_imgs=2,
-        num_discovery_imgs=5)
+        num_discovery_imgs=5,
+        num_workers=0)
     self.mycd.dic = {
         'bn1': {
             'concept1': {
@@ -112,8 +113,8 @@ class DtcavTest(googletest.TestCase):
 
   def test_create_patches(self):
 
-    self.mycd.create_patches([[10, 10]],
-                             discovery_images=np.random.random((50, 299, 299,
+    self.mycd.create_patches(param_dict={'n_segments': [10]},
+                              discovery_images=np.random.random((50, 299, 299,
                                                                 3)))
     self.assertEqual(len(self.mycd.dataset), len(self.mycd.patches))
     self.assertEqual(len(self.mycd.dataset), len(self.mycd.image_numbers))
@@ -131,6 +132,9 @@ class DtcavTest(googletest.TestCase):
 
   def test_discover_concepts(self):
 
+    self.mycd.create_patches(param_dict={'n_segments': [10]},
+                              discovery_images=np.random.random((50, 299, 299,
+                                                                3)))
     self.mycd.discover_concepts(
         activations={'bn1': np.random.random((len(self.mycd.dataset), 100))},
         param_dicts={'n_clusters': 10})

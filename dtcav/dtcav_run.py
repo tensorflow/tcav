@@ -20,7 +20,7 @@ import numpy as np
 import sklearn.metrics as metrics
 sys.path.append('..')
 from tcav import utils
-import tensorflow.google as tf
+import tensorflow as tf
 
 import dtcav_helpers
 from dtcav import ConceptDiscovery
@@ -29,14 +29,15 @@ import argparse
 
 def main(argv):
 
+  source_dir = args.source_dir
+  working_dir = args.working_dir
   model_to_run = args.model_to_run
+  target_class = args.target_class
+  bottlenecks = args.bottlenecks.split(',')
+  num_test = args.num_test
   num_random_exp = args.num_random_exp
   max_imgs = args.max_imgs
   min_imgs = args.min_imgs
-  num_concepts = args.num_concepts
-  num_test = args.num_test
-  target_class = args.target_class
-  bottlenecks = args.bottlenecks.split(',')
   folder_name = args.folder_name
   patches = False
   superpixel_params = []
@@ -151,7 +152,7 @@ def parse_arguments(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--source_dir', type=str,
       help='''Directory where the network's classes image folders and random
-      concept folders are saved.''', default='InceptionV3')
+      concept folders are saved.''', default='./InceptionV3/Zebra')
   parser.add_argument('--working_dir', type=str,
       help='Directory to save the results.', default='./DTCAV')
   parser.add_argument('--model_to_run', type=str,

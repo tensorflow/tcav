@@ -314,10 +314,10 @@ def similarity(cd, num_random_exp=None, num_workers=25):
     num_random_exp = cd.num_random_exp
   randoms = ['random500_{}'.format(i) for i in np.arange(num_random_exp)]
   concepts = {}
-  for bn in cd.bottleneck:
+  for bn in cd.bottlenecks:
     concepts[bn] = [cd.target_class, cd.random_concept] + cd.dic[bn]['concepts']
   for bn in cd.bottlenecks:
-    concept_pairs = [(c1, c2) for c1 in concepts for c2 in concepts]
+    concept_pairs = [(c1, c2) for c1 in concepts[bn] for c2 in concepts[bn]]
     similarity_dic[bn] = {pair: [] for pair in concept_pairs}
     def t_func(rnd):
       return concepts_similarity(cd, concepts[bn], rnd, bn)

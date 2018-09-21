@@ -17,7 +17,7 @@ import sklearn.metrics.pairwise as metrics
 sys.path.append('..')
 import cav
 import tcav_helpers
-import tensorflow.google as tf
+import tensorflow as tf
 
 class ConceptDiscovery(object):
   """Discovering and testing concepts of a class.

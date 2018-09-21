@@ -16,7 +16,7 @@ limitations under the License.
 
 import os
 import numpy as np
-import tensorflow.google as tf
+import tensorflow as tf
 from tensorflow.python.platform import googletest
 
 from dtcav import ConceptDiscovery
@@ -148,15 +148,15 @@ class DtcavHelpersTest(googletest.TestCase):
     x, y = dtcav_helpers.binary_dataset(
         np.random.random((10, 5)), np.random.random((10, 5)))
     self.assertEqual(x.shape[0], y.shape[0])
-    self.assertNear(np.mean(y), 0.5, 0.01)
+    self.assertAlmostEqual(np.mean(y), 0.5)
 
   def testCosineSimilarity(self):
 
     a = np.random.random(100)
     b = np.random.random(100)
     c = a - np.sum(a * b) / (np.linalg.norm(b)**2) * b
-    self.assertNear(dtcav_helpers.cosine_similarity(a, a), 1., 0.01)
-    self.assertNear(dtcav_helpers.cosine_similarity(b, c), 0., 0.01)
+    self.assertAlmostEqual(dtcav_helpers.cosine_similarity(a, a), 1.)
+    self.assertAlmostEqual(dtcav_helpers.cosine_similarity(b, c), 0.)
     self.assertEqual(dtcav_helpers.cosine_similarity(a, np.zeros(100)), 0.)
 
   def testSimilarity(self):
@@ -167,8 +167,8 @@ class DtcavHelpersTest(googletest.TestCase):
       for c1 in self.mycd.dic[bn]['concepts']:
         for c2 in self.mycd.dic[bn]['concepts']:
           self.assertIn((c1, c2), sim[bn].keys())
-          self.assertNear(
-              np.mean(sim[bn][(c1, c2)]), np.mean(sim[bn][(c2, c1)]), 0.01)
+          self.assertAlmostEqual(
+              np.mean(sim[bn][(c1, c2)]), np.mean(sim[bn][(c2, c1)]))
 
 
 if __name__ == '__main__':
