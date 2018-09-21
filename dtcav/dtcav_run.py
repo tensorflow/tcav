@@ -27,9 +27,10 @@ from dtcav import ConceptDiscovery
 import argparse
 
 
-def main(argv):
+def main(args):
 
   source_dir = args.source_dir
+  test_dir = args.test_dir
   working_dir = args.working_dir
   model_to_run = args.model_to_run
   target_class = args.target_class
@@ -38,20 +39,12 @@ def main(argv):
   num_random_exp = args.num_random_exp
   max_imgs = args.max_imgs
   min_imgs = args.min_imgs
-  folder_name = args.folder_name
-  patches = False
-  superpixel_params = []
-  for params in args.superpixel_params.split('-'):
-    superpixel_params.append([float(param) for param in params.split(',')])
   ###### related DIRs on CNS to store results #######
-  source_dir = '/cns/is-d/home/amiratag/imagenet_train/'
-  test_dir = '/cns/is-d/home/amiratag/imagenet_val/'
-  working_dir = '/cns/is-d/home/' + user + '/KM_new/' + folder_name
-  discovered_concepts_dir = working_dir + '/concepts/'
-  results_dir = working_dir + '/results/'
-  cavs_dir = working_dir + '/cavs/'
-  activations_dir = working_dir + '/acts/'
-  results_summaries_dir = working_dir + '/results_summaries/'
+  discovered_concepts_dir = os.path.join(working_dir, 'concepts/')
+  results_dir = os.path.join(working_dir, 'results/')
+  cavs_dir = os.path.join(working_dir, 'cavs/')
+  activations_dir = os.path.join(working_dir, 'acts/')
+  results_summaries_dir = os.path.join(working_dir, 'results_summaries/')
   if tf.gfile.Exists(working_dir):
     tf.gfile.DeleteRecursively(working_dir)
   tf.gfile.MakeDirs(working_dir)
@@ -152,7 +145,10 @@ def parse_arguments(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--source_dir', type=str,
       help='''Directory where the network's classes image folders and random
-      concept folders are saved.''', default='./InceptionV3/Zebra')
+      concept folders are saved.''', default='./Imagenet_train')
+  parser.add_argument('--test_dir', type=str,
+      help='''Directory where the network's classes test image folders and random
+      concept folders are saved.''', default='./Imagenet_test')
   parser.add_argument('--working_dir', type=str,
       help='Directory to save the results.', default='./DTCAV')
   parser.add_argument('--model_to_run', type=str,
