@@ -139,7 +139,8 @@ class TCAV(object):
                alphas,
                random_counterpart,
                cav_dir=None,
-               num_random_exp=5):
+               num_random_exp=5,
+               random_dirs=None):
     """Initialze tcav class.
 
     Args:
@@ -150,10 +151,13 @@ class TCAV(object):
       model_instance: an instance of model class.
       activation_generator: a function handler to return activations.
       alphas: list of hyper parameters to run
-      random_counterpart: the random concept (e.g., random500_1) to run against
-                          the concepts for statistical testing.
+      random_counterpart: the random concept to run against the concepts for
+                          statistical testing.
       cav_dir: the path to store CAVs
       num_random_exp: number of random experiments to compare against.
+      random_dirs: A list of names of random concepts for the random experiments
+                   to draw from. Optional, if not provided, the names will be
+                   random500_{i} for i in num_random_exp.
     """
     self.target = target
     self.concepts = concepts
@@ -167,7 +171,8 @@ class TCAV(object):
     self.sess = sess
 
     # make pairs to test.
-    self._process_what_to_run_expand(num_random_exp=num_random_exp)
+    self._process_what_to_run_expand(num_random_exp=num_random_exp,
+                                     random_dirs=random_dirs)
     # parameters
     self.params = self.get_params()
     tf.logging.info('TCAV will %s params' % len(self.params))
@@ -224,7 +229,7 @@ class TCAV(object):
     cav_hparams.alpha = alpha
     cav_instance = get_or_train_cav(
         concepts, bottleneck, acts, cav_dir=cav_dir, cav_hparams=cav_hparams)
-  
+
     # clean up
     for c in concepts:
       del acts[c]
@@ -267,7 +272,7 @@ class TCAV(object):
     del acts
     return result
 
-  def _process_what_to_run_expand(self, num_random_exp=100):
+  def _process_what_to_run_expand(self, num_random_exp=100, random_dirs=None):
     """Get tuples of parameters to run TCAV with.
 
     TCAV builds random concept to conduct statistical significance testing
@@ -276,6 +281,9 @@ class TCAV(object):
 
     Args:
       num_random_exp: number of random experiments to run to compare.
+      random_dirs: A list of names of random concepts for the random experiments
+                   to draw from. Optional, if not provided, the names will be
+                   random500_{i} for i in num_random_exp.
     """
 
     target_concept_pairs = [(self.target, self.concepts)]
@@ -283,12 +291,14 @@ class TCAV(object):
     all_concepts_concepts, pairs_to_run_concepts = utils.process_what_to_run_expand(
         utils.process_what_to_run_concepts(target_concept_pairs),
         self.random_counterpart,
-        num_random_exp=num_random_exp)
+        num_random_exp=num_random_exp,
+        random_dirs=random_dirs)
     all_concepts_randoms, pairs_to_run_randoms = utils.process_what_to_run_expand(
         utils.process_what_to_run_randoms(target_concept_pairs,
                                           self.random_counterpart),
         self.random_counterpart,
-        num_random_exp=num_random_exp)
+        num_random_exp=num_random_exp,
+        random_dirs=random_dirs)
     self.all_concepts = list(set(all_concepts_concepts + all_concepts_randoms))
     self.pairs_to_test = pairs_to_run_concepts + pairs_to_run_randoms
 

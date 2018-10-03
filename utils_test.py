@@ -34,7 +34,6 @@ class UtilsTest(googletest.TestCase):
         self.pair_to_test_one_concept,
         self.random_counterpart,
         num_random_exp=2)
-    print(pairs_to_test)
     self.assertEqual(
         sorted(all_concepts),
         sorted(['t1', 'c1', 'random500_2', 'random500_1', 'random500_0']))
@@ -43,6 +42,21 @@ class UtilsTest(googletest.TestCase):
         sorted([('t1', ['c1', 'random500_0']), ('t1', ['c1', 'random500_2']),
                 ('t1', ['random500_1', 'random500_0']),
                 ('t1', ['random500_1', 'random500_2'])]))
+
+  def test_process_what_to_run_expand_specify_dirs(self):
+    all_concepts, pairs_to_test = process_what_to_run_expand(
+        self.pair_to_test_one_concept,
+        self.random_counterpart,
+        num_random_exp=2,
+        random_dirs=['random_dir1', 'random_dir2'])
+    self.assertEqual(
+        sorted(all_concepts),
+        sorted(['t1', 'c1', 'random500_1', 'random_dir1', 'random_dir2']))
+    self.assertEqual(
+        sorted(pairs_to_test),
+        sorted([('t1', ['c1', 'random_dir1']), ('t1', ['c1', 'random_dir2']),
+                ('t1', ['random500_1', 'random_dir1']),
+                ('t1', ['random500_1', 'random_dir2'])]))
 
   def test_process_what_to_run_concepts(self):
     self.assertEqual(
