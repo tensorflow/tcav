@@ -121,6 +121,28 @@ class TcavTest(googletest.TestCase):
                             ('t1',['random500_1', 'random500_2'])
                            ]))
 
+  def test__process_what_to_run_expand_specify_dirs(self):
+    # _process_what_to_run_expand stores results to all_concepts,
+    # and pairs_to_test.
+    self.mytcav._process_what_to_run_expand(
+        num_random_exp=2, random_dirs=['random_dir1', 'random_dir2'])
+    self.assertEqual(sorted(self.mytcav.all_concepts),
+                     sorted(['t1',
+                             'c1',
+                             'c2',
+                             'random500_1',
+                             'random_dir1',
+                             'random_dir2'])
+                    )
+    self.assertEqual(sorted(self.mytcav.pairs_to_test),
+                    sorted([('t1',['c1', 'random_dir1']),
+                            ('t1',['c1', 'random_dir2']),
+                            ('t1',['c2', 'random_dir1']),
+                            ('t1',['c2', 'random_dir2']),
+                            ('t1',['random500_1', 'random_dir1']),
+                            ('t1',['random500_1', 'random_dir2'])
+                           ]))
+
   def test_get_params(self):
     """Check if the first param was correct.
     """
