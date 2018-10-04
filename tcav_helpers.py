@@ -153,15 +153,12 @@ def load_images_from_files(filenames, max_imgs=500, return_filenames=False,
   else:
     return np.array(imgs)
 
-""" highe level overview.
+""" high level overview.
 get_acts_from_images: run images on a model and return activations.
 get_imgs_and_acts_save: loads images from image path and
                          calls get_acts_from_images to get images
                          and save them.
-
 """
-
-
 
 
 def get_acts_from_images(imgs, model, bottleneck_name):
@@ -175,7 +172,8 @@ def get_acts_from_images(imgs, model, bottleneck_name):
   Returns:
     numpy array of activations.
   """
-  return np.asarray(model.run_imgs(imgs, bottleneck_name)).squeeze()
+  img_acts = model.run_imgs(imgs, bottleneck_name)
+  return model.reshape_activations(img_acts)
 
 
 def get_imgs_and_acts_save(model, bottleneck_name, img_paths, acts_path,
