@@ -41,27 +41,27 @@ def make_key(a_dict, key):
 
 def save_np_array(array, path):
   """Save an array as numpy array (loading time is better than pickling."""
-  with open(path, 'w') as f:
+  with tf.gfile.Open(path, 'w') as f:
     np.save(f, array, allow_pickle=False)
 
 
 def read_np_array(path):
   """Read a saved numpy array and return."""
-  with open(path) as f:
+  with tf.gfile.Open(path) as f:
     data = np.load(f)
   return data
 
 
 def read_file(path):
   """Read a file in path ."""
-  with open(path, 'r') as f:
+  with tf.gfile.Open(path, 'r') as f:
     data = f.read()
   return data
 
 
 def write_file(data, path, mode='w'):
   """Wrtie data to path to cns."""
-  with open(path, mode) as f:
+  with tf.gfile.Open(path, mode) as f:
     if mode == 'a':
       f.write('\n')
     f.write(data)
@@ -181,7 +181,7 @@ def get_acts_from_images(imgs, model, bottleneck_name):
 def get_imgs_and_acts_save(model, bottleneck_name, img_paths, acts_path,
                            img_shape, max_images=500):
   """Get images from files, process acts and saves.
-  
+
   Args:
     model: a model instance
     bottleneck_name: name of the bottleneck that activations are from
@@ -189,7 +189,7 @@ def get_imgs_and_acts_save(model, bottleneck_name, img_paths, acts_path,
     acts_path: where to store activations
     img_shape: shape of the image.
     max_images: maximum number of images to save to acts_path
-  
+
   Returns:
     success or not.
   """
@@ -198,7 +198,7 @@ def get_imgs_and_acts_save(model, bottleneck_name, img_paths, acts_path,
   tf.logging.info('got %s imgs' % (len(imgs)))
   acts = get_acts_from_images(imgs, model, bottleneck_name)
   tf.logging.info('Writing acts to {}'.format(acts_path))
-  with open(acts_path, 'w') as f:
+  with tf.gfile.Open(acts_path, 'w') as f:
     np.save(f, acts, allow_pickle=False)
   del acts
   del imgs
@@ -251,7 +251,7 @@ def process_and_load_activations(model, bottleneck_names, concepts,
                                max_images=max_images)
 
       if bottleneck_name not in acts[concept].keys():
-        with open(acts_path) as f:
+        with tf.gfile.Open(acts_path) as f:
           acts[concept][bottleneck_name] = np.load(f).squeeze()
           tf.logging.info('Loaded {} shape {}'.format(
               acts_path,
