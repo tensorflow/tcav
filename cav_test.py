@@ -60,7 +60,7 @@ class CavTest(googletest.TestCase):
     if os.path.exists(self.cav_dir):
       shutil.rmtree(self.cav_dir)
     os.mkdir(self.cav_dir)
-    with open(self.save_path, 'w') as pkl_file:
+    with tf.gfile.Open(self.save_path, 'w') as pkl_file:
       pickle.dump({
           'concepts': self.concepts,
           'bottleneck': self.bottleneck,

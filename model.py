@@ -91,6 +91,21 @@ class ModelWrapper(object):
     """
     return pred_t
 
+  def reshape_activations(self, layer_acts):
+    """Reshapes layer activations as needed to feed through the model network.
+
+    Override this for models that require reshaping of the activations for use
+    in TCAV.
+
+    Args:
+      layer_acts: Activations as returned by run_imgs.
+
+    Returns:
+      Activations in model-dependent form; the default is a squeezed array (i.e.
+      at most one dimensions of size 1).
+    """
+    return np.asarray(layer_acts).squeeze()
+
   @abstractmethod
   def label_to_id(self, label):
     """Convert label (string) to index in the logit layer (id)."""
