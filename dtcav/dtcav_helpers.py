@@ -45,7 +45,7 @@ def make_model(model_to_run, sess, randomize=False, model_path=None,
   Raises:
     ValueError: If model name is not valid.
   """
-  models_root = '/cns/in-d/home/moralex/models/'
+  models_root = MODEL_LOCATION 
   if model_to_run == 'InceptionV3':
     basepath = models_root + 'inception_v3/'
     if model_path is None:
