@@ -24,6 +24,11 @@ from tensorflow.python.platform import flags
 from tensorflow.python.platform import googletest
 from cav import CAV, get_or_train_cav
 
+try:
+    xrange          # Python 2
+except NameError:
+    xrange = range  # Python 3
+
 FLAGS = flags.FLAGS
 flags.DEFINE_string(name='test_tmpdir', default='/tmp',
                     help='Temporary directory for test files')
