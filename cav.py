@@ -55,7 +55,7 @@ class CAV(object):
     Returns:
       CAV instance.
     """
-    with tf.gfile.Open(cav_path) as pkl_file:
+    with tf.gfile.Open(cav_path, 'rb') as pkl_file:
       save_dict = pickle.load(pkl_file)
 
     cav = CAV(save_dict['concepts'], save_dict['bottleneck'],

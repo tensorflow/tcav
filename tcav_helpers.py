@@ -88,7 +88,7 @@ def load_image_from_file(filename, shape):
     tf.logging.error('Cannot find file: {}'.format(filename))
     return None
   try:
-    img = np.array(PIL.Image.open(tf.gfile.Open(filename)).resize(
+    img = np.array(PIL.Image.open(tf.gfile.Open(filename, 'rb')).resize(
         shape, PIL.Image.BILINEAR))
     # Normalize pixel values to between 0 and 1.
     img = np.float32(img) / 255.0
@@ -249,7 +249,7 @@ def process_and_load_activations(model, bottleneck_names, concepts,
                                max_images=max_images)
 
       if bottleneck_name not in acts[concept].keys():
-        with tf.gfile.Open(acts_path) as f:
+        with tf.gfile.Open(acts_path, 'rb') as f:
           acts[concept][bottleneck_name] = np.load(f).squeeze()
           tf.logging.info('Loaded {} shape {}'.format(
               acts_path,
