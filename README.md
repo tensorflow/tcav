@@ -22,7 +22,7 @@ TCAV learns concepts from examples. For instance, TCAV needs a couple of example
 
 ### Why use high level concepts instead of input features?
 
-Humans think and communicate using concepts, and not using numbers (e.g., weights to each feature).  When there are lots of numbers to combine and reason about (many features), it becomes harder and harder for humans to make sense of the information they are accounting for. TCAV instead delivers explanations in the way humans communicate to each other. 
+Humans think and communicate using concepts, and not using numbers (e.g., weights to each feature).  When there are lots of numbers to combine and reason about (many features), it becomes harder and harder for humans to make sense of the information they are accounting for. TCAV instead delivers explanations in the way humans communicate to each other.
 
 ### The consumer of the explanation may not know machine learning too well. Can they understand the explanation?
 Yes. TCAV is designed to make sense to everyone - as long as they can understand the high level concept!
@@ -39,8 +39,7 @@ mytcav = tcav.TCAV(sess,
                    target,
                    concepts,
                    bottlenecks,
-                   mymodel,
-                   act_gen_wrapper,
+                   act_gen,
                    alphas,
                    random_counterpart,
                    cav_dir=cav_dir,

@@ -16,7 +16,7 @@ limitations under the License.
 
 """A simple class to take care of various parameters for TCAV."""
 
- 
+
 class RunParams(object):
   """Run parameters for TCAV."""
 
@@ -35,7 +35,7 @@ class RunParams(object):
       bottleneck: the name of a bottleneck of interest.
       concepts: one concept
       target_class: one target class
-      activation_generator: function handler that returns activations.
+      activation_generator: an ActivationGeneratorInterface instance
       cav_dir: the path to store CAVs
       alpha: cav parameter.
       model: an instance of a model class.

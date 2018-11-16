@@ -36,8 +36,6 @@ class ModelWrapper(object):
     self.ends = None
     # The model name string.
     self.model_name = None
-    # shape of the input image in this model
-    self.image_shape = None
     # a place holder for index of the neuron/class of interest.
     # usually defined under the graph. For example:
     # with g.as_default():
@@ -70,17 +68,17 @@ class ModelWrapper(object):
         self.y_input: y
     })
 
-  def get_predictions(self, imgs):
-    """Get prediction of the images.
+  def get_predictions(self, examples):
+    """Get prediction of the examples.
 
     Args:
-      imgs: array of images to get predictions
+      imgs: array of examples to get predictions
 
     Returns:
       array of predictions
     """
     return self.adjust_prediction(
-        self.sess.run(self.ends['prediction'], {self.ends['input']: imgs}))
+        self.sess.run(self.ends['prediction'], {self.ends['input']: examples}))
 
   def adjust_prediction(self, pred_t):
     """Adjust the prediction tensor to be the expected shape.
@@ -98,7 +96,7 @@ class ModelWrapper(object):
     in TCAV.
 
     Args:
-      layer_acts: Activations as returned by run_imgs.
+      layer_acts: Activations as returned by run_examples.
 
     Returns:
       Activations in model-dependent form; the default is a squeezed array (i.e.
@@ -116,28 +114,35 @@ class ModelWrapper(object):
     """Convert index in the logit layer (id) to label (string)."""
     pass
 
-  @abstractmethod
-  def get_image_shape(self):
-    """returns the shape of an input image."""
-    pass
-
-  def run_imgs(self, imgs, bottleneck_name):
-    """Get activations at a bottleneck for provided images.
+  def run_examples(self, examples, bottleneck_name):
+    """Get activations at a bottleneck for provided examples.
 
     Args:
-      imgs: np.array of images, expects shape [?, width, height, channels]
-            where image_shape is (width, height, channels)
+      examples: example data to feed into network.
       bottleneck_name: string, should be key of self.bottlenecks_tensors
 
     Returns:
-      Activations in the given layer - shape is [?, width, height, num_filters]
+      Activations in the given layer.
     """
     return self.sess.run(self.bottlenecks_tensors[bottleneck_name],
-                         {self.ends['input']: imgs})
+                         {self.ends['input']: examples})
 
 
-class PublicModelWrapper(ModelWrapper):
-  """Simple wrapper of the public models with session object.
+class ImageModelWrapper(ModelWrapper):
+  """Wrapper base class for image models."""
+
+  def __init__(self, image_shape):
+    super(ModelWrapper, self).__init__()
+    # shape of the input image in this model
+    self.image_shape = image_shape
+
+  def get_image_shape(self):
+    """returns the shape of an input image."""
+    return self.image_shape
+
+
+class PublicImageModelWrapper(ImageModelWrapper):
+  """Simple wrapper of the public image models with session object.
   """
   def __init__(self,
                sess,
@@ -146,14 +151,14 @@ class PublicModelWrapper(ModelWrapper):
                image_shape,
                endpoints_dict,
                scope):
+    super(PublicImageModelWrapper, self).__init__(image_shape)
     self.labels = tf.gfile.Open(labels_path).read().splitlines()
-    self.ends = PublicModelWrapper.import_graph(model_fn_path,
-                                                image_shape,
-                                                endpoints_dict,
-                                                self.image_value_range,
-                                                scope=scope)
-    self.bottlenecks_tensors = PublicModelWrapper.get_bottleneck_tensors(scope)
-    self.image_shape = image_shape
+    self.ends = PublicImageModelWrapper.import_graph(model_fn_path,
+                                                     endpoints_dict,
+                                                     self.image_value_range,
+                                                     scope=scope)
+    self.bottlenecks_tensors = PublicImageModelWrapper.get_bottleneck_tensors(
+        scope)
     graph = tf.get_default_graph()
 
     # Construct gradient ops.
@@ -163,8 +168,9 @@ class PublicModelWrapper(ModelWrapper):
       self.pred = tf.expand_dims(self.ends['prediction'][0], 0)
       self.loss = tf.reduce_mean(
           tf.nn.softmax_cross_entropy_with_logits(
-              labels=tf.one_hot(self.y_input,
-                                self.ends['prediction'].get_shape().as_list()[1]),
+              labels=tf.one_hot(
+                  self.y_input,
+                  self.ends['prediction'].get_shape().as_list()[1]),
               logits=self.pred))
     self._make_gradient_tensors()
 
@@ -174,11 +180,8 @@ class PublicModelWrapper(ModelWrapper):
   def label_to_id(self, label):
     return self.labels.index(label)
 
-  def get_image_shape(self):
-    return self.image_shape
-
   @staticmethod
-  def create_input(t_input, image_shape,  image_value_range):
+  def create_input(t_input, image_value_range):
     """Create input tensor."""
     def forget_xy(t):
       """Forget sizes of dimensions [1, 2] of a 4d tensor."""
@@ -208,7 +211,7 @@ class PublicModelWrapper(ModelWrapper):
 
   # Load graph and import into graph used by our session
   @staticmethod
-  def import_graph(saved_path, image_shape, endpoints, image_value_range, scope='import'):
+  def import_graph(saved_path, endpoints, image_value_range, scope='import'):
     t_input = tf.placeholder(np.float32, [None, None, None, 3])
     graph = tf.Graph()
     assert graph.unique_name(scope, False) == scope, (
@@ -218,7 +221,8 @@ class PublicModelWrapper(ModelWrapper):
     graph_def = tf.GraphDef.FromString(tf.gfile.Open(saved_path).read())
 
     with tf.name_scope(scope) as sc:
-      t_input, t_prep_input = PublicModelWrapper.create_input(t_input, image_shape, image_value_range)
+      t_input, t_prep_input = PublicImageModelWrapper.create_input(
+          t_input, image_value_range)
 
       graph_inputs = {}
       graph_inputs[endpoints['input']] = t_prep_input
@@ -229,7 +233,7 @@ class PublicModelWrapper(ModelWrapper):
     return myendpoints
 
 
-class GoolgeNetWrapper_public(PublicModelWrapper):
+class GoolgeNetWrapper_public(PublicImageModelWrapper):
 
   def __init__(self, sess, model_saved_path, labels_path):
     image_shape_v1 = [224, 224, 3]
@@ -256,7 +260,7 @@ class GoolgeNetWrapper_public(PublicModelWrapper):
     # Following tfzoo convention.
     return pred_t[::16]
 
-class InceptionV3Wrapper_public(PublicModelWrapper):
+class InceptionV3Wrapper_public(PublicImageModelWrapper):
   def __init__(self, sess, model_saved_path, labels_path):
     self.image_value_range = (-117, 255-117)
     image_shape_v3 = [299, 299, 3]

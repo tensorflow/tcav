@@ -48,7 +48,7 @@ class UtilsTest(googletest.TestCase):
         self.pair_to_test_one_concept,
         self.random_counterpart,
         num_random_exp=2,
-        random_dirs=['random_dir1', 'random_dir2'])
+        random_concepts=['random_dir1', 'random_dir2'])
     self.assertEqual(
         sorted(all_concepts),
         sorted(['t1', 'c1', 'random500_1', 'random_dir1', 'random_dir2']))

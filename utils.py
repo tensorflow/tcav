@@ -48,7 +48,7 @@ def flatten(nested_list):
 def process_what_to_run_expand(pairs_to_test,
                                random_counterpart,
                                num_random_exp=100,
-                               random_dirs=None):
+                               random_concepts=None):
   """Get concept vs. random or random vs. random pairs to run.
 
     Given set of target, list of concept pairs, expand them to include
@@ -62,16 +62,17 @@ def process_what_to_run_expand(pairs_to_test,
     pairs_to_test: [(target, [concept1, concept2,...]),...]
     random_counterpart: random concept that will be compared to the concept.
     num_random_exp: number of random experiments to run against each concept.
-    random_dirs: A list of names of random concepts for the random experiments
-                 to draw from. Optional, if not provided, the names will be
-                 random500_{i} for i in num_random_exp.
+    random_concepts: A list of names of random concepts for the random
+                     experiments to draw from. Optional, if not provided, the
+                     names will be random500_{i} for i in num_random_exp.
 
   Returns:
     all_concepts: unique set of targets/concepts
     new_pairs_to_test: expanded
   """
   def get_random_concept(i):
-    return random_dirs[i] if random_dirs else 'random500_{}'.format(i)
+    return (random_concepts[i] if randrandom_conceptsom_dirs
+            else 'random500_{}'.format(i))
 
   new_pairs_to_test = []
   for (target, concept_set) in pairs_to_test:

@@ -134,13 +134,12 @@ class TCAV(object):
                target,
                concepts,
                bottlenecks,
-               model_instance,
                activation_generator,
                alphas,
                random_counterpart,
                cav_dir=None,
                num_random_exp=5,
-               random_dirs=None):
+               random_concepts=None):
     """Initialze tcav class.
 
     Args:
@@ -148,16 +147,16 @@ class TCAV(object):
       target: one target class
       concepts: one concept
       bottlenecks: the name of a bottleneck of interest.
-      model_instance: an instance of model class.
-      activation_generator: a function handler to return activations.
+      activation_generator: an ActivationGeneratorInterface instance to return
+                            activations.
       alphas: list of hyper parameters to run
       random_counterpart: the random concept to run against the concepts for
                           statistical testing.
       cav_dir: the path to store CAVs
       num_random_exp: number of random experiments to compare against.
-      random_dirs: A list of names of random concepts for the random experiments
-                   to draw from. Optional, if not provided, the names will be
-                   random500_{i} for i in num_random_exp.
+      random_concepts: A list of names of random concepts for the random
+                       experiments to draw from. Optional, if not provided, the
+                       names will be random500_{i} for i in num_random_exp.
     """
     self.target = target
     self.concepts = concepts
@@ -166,13 +165,13 @@ class TCAV(object):
     self.cav_dir = cav_dir
     self.alphas = alphas
     self.random_counterpart = random_counterpart
-    self.mymodel = model_instance
+    self.mymodel = activation_generator.get_model()
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
 
     # make pairs to test.
     self._process_what_to_run_expand(num_random_exp=num_random_exp,
-                                     random_dirs=random_dirs)
+                                     random_concepts=random_concepts)
     # parameters
     self.params = self.get_params()
     tf.logging.info('TCAV will %s params' % len(self.params))
@@ -223,7 +222,8 @@ class TCAV(object):
     tf.logging.info('running %s %s' % (target_class, concepts))
 
     # Get acts
-    acts = activation_generator(mymodel, bottleneck, concepts + [target_class])
+    acts = activation_generator.process_and_load_activations(
+        [bottleneck], concepts + [target_class])
     # Get CAVs
     cav_hparams = CAV.default_hparams()
     cav_hparams.alpha = alpha
@@ -272,7 +272,7 @@ class TCAV(object):
     del acts
     return result
 
-  def _process_what_to_run_expand(self, num_random_exp=100, random_dirs=None):
+  def _process_what_to_run_expand(self, num_random_exp=100, random_concepts=None):
     """Get tuples of parameters to run TCAV with.
 
     TCAV builds random concept to conduct statistical significance testing
@@ -281,24 +281,26 @@ class TCAV(object):
 
     Args:
       num_random_exp: number of random experiments to run to compare.
-      random_dirs: A list of names of random concepts for the random experiments
+      random_concepts: A list of names of random concepts for the random experiments
                    to draw from. Optional, if not provided, the names will be
                    random500_{i} for i in num_random_exp.
     """
 
     target_concept_pairs = [(self.target, self.concepts)]
 
-    all_concepts_concepts, pairs_to_run_concepts = utils.process_what_to_run_expand(
-        utils.process_what_to_run_concepts(target_concept_pairs),
-        self.random_counterpart,
-        num_random_exp=num_random_exp,
-        random_dirs=random_dirs)
-    all_concepts_randoms, pairs_to_run_randoms = utils.process_what_to_run_expand(
-        utils.process_what_to_run_randoms(target_concept_pairs,
-                                          self.random_counterpart),
-        self.random_counterpart,
-        num_random_exp=num_random_exp,
-        random_dirs=random_dirs)
+    all_concepts_concepts, pairs_to_run_concepts = (
+        utils.process_what_to_run_expand(
+            utils.process_what_to_run_concepts(target_concept_pairs),
+            self.random_counterpart,
+            num_random_exp=num_random_exp,
+            random_concepts=random_concepts))
+    all_concepts_randoms, pairs_to_run_randoms = (
+        utils.process_what_to_run_expand(
+            utils.process_what_to_run_randoms(target_concept_pairs,
+                                              self.random_counterpart),
+            self.random_counterpart,
+            num_random_exp=num_random_exp,
+            random_concepts=random_concepts))
     self.all_concepts = list(set(all_concepts_concepts + all_concepts_randoms))
     self.pairs_to_test = pairs_to_run_concepts + pairs_to_run_randoms
 
