@@ -46,7 +46,7 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
     self.acts_dir = acts_dir
     self.max_examples = max_examples
 
-  def get_model():
+  def get_model(self):
     return self.model
 
   @abstractmethod

@@ -18,6 +18,7 @@ import tensorflow as tf
 from tensorflow.python.platform import googletest
 from cav import CAV
 from tcav import TCAV
+from activation_generator import ActivationGeneratorBase
 
 
 class TcavTest_model():
@@ -41,6 +42,15 @@ class TcavTest_model():
     """
     return 0
 
+class TcavTest_ActGen(ActivationGeneratorBase):
+  """A mock act gen.
+  """
+
+  def __init__(self, model):
+    super(TcavTest_ActGen, self).__init__(model, None, 10)
+
+  def get_examples_for_concept(self, concept):
+    return []
 
 class TcavTest(googletest.TestCase):
 
@@ -59,13 +69,13 @@ class TcavTest(googletest.TestCase):
     self.random_counterpart = 'random500_1'
     self.activation_generator = None
     self.mymodel = TcavTest_model()
+    self.act_gen = TcavTest_ActGen(self.mymodel)
 
     self.mytcav = TCAV(None,
                        self.target,
                        self.concepts,
                        [self.bottleneck],
-                       self.mymodel,
-                       self.activation_generator,
+                       self.act_gen,
                        [self.hparams.alpha],
                        self.random_counterpart)
 
@@ -125,7 +135,7 @@ class TcavTest(googletest.TestCase):
     # _process_what_to_run_expand stores results to all_concepts,
     # and pairs_to_test.
     self.mytcav._process_what_to_run_expand(
-        num_random_exp=2, random_dirs=['random_dir1', 'random_dir2'])
+        num_random_exp=2, random_concepts=['random_dir1', 'random_dir2'])
     self.assertEqual(sorted(self.mytcav.all_concepts),
                      sorted(['t1',
                              'c1',
@@ -150,7 +160,7 @@ class TcavTest(googletest.TestCase):
     self.assertEqual(params[0].bottleneck, 'bn')
     self.assertEqual(params[0].concepts, ['c1', 'random500_0'])
     self.assertEqual(params[0].target_class, 't1')
-    self.assertEqual(params[0].activation_generator, None)
+    self.assertEqual(params[0].activation_generator, self.act_gen)
     self.assertEqual(params[0].cav_dir, self.cav_dir)
     self.assertEqual(params[0].alpha, self.hparams.alpha)
     self.assertEqual(params[0].model, self.mymodel)

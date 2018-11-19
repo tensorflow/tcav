@@ -71,7 +71,7 @@ def process_what_to_run_expand(pairs_to_test,
     new_pairs_to_test: expanded
   """
   def get_random_concept(i):
-    return (random_concepts[i] if randrandom_conceptsom_dirs
+    return (random_concepts[i] if random_concepts
             else 'random500_{}'.format(i))
 
   new_pairs_to_test = []
