@@ -262,7 +262,7 @@ class GoolgeNetWrapper_public(PublicImageModelWrapper):
 
 class InceptionV3Wrapper_public(PublicImageModelWrapper):
   def __init__(self, sess, model_saved_path, labels_path):
-    self.image_value_range = (-117, 255-117)
+    self.image_value_range = (-1, 1)
     image_shape_v3 = [299, 299, 3]
     endpoints_v3 = dict(
         input='Mul:0',
