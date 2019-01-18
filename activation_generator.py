@@ -73,7 +73,7 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
         acts_path = os.path.join(self.acts_dir, 'acts_{}_{}'.format(
             concept, bottleneck_name)) if self.acts_dir else None
         if acts_path and tf.gfile.Exists(acts_path):
-          with tf.gfile.Open(acts_path) as f:
+          with tf.gfile.Open(acts_path, 'rb') as f:
             acts[concept][bottleneck_name] = np.load(f).squeeze()
             tf.logging.info('Loaded {} shape {}'.format(
                 acts_path, acts[concept][bottleneck_name].shape))
