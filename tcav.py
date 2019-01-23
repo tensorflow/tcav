@@ -195,7 +195,8 @@ class TCAV(object):
       results = pool.map(lambda param: self._run_single_set(param), self.params)
     else:
       results = []
-      for param in self.params:
+      for i, param in enumerate(self.params):
+        tf.logging.info('Running param %s of %s' % (i, len(self.params)))
         results.append(self._run_single_set(param))
     tf.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
