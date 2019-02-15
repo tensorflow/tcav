@@ -240,36 +240,36 @@ class TCAV(object):
                             cav_hparams.alpha)
     target_class_for_compute_tcav_score = target_class
 
-    for cav_concept in concepts:
-      if cav_concept is self.random_counterpart or 'random' not in cav_concept:
-        i_up = self.compute_tcav_score(
-            mymodel, target_class_for_compute_tcav_score, cav_concept,
-            cav_instance, acts[target_class][cav_instance.bottleneck])
-        val_directional_dirs = self.get_directional_dir(
-            mymodel, target_class_for_compute_tcav_score, cav_concept,
-            cav_instance, acts[target_class][cav_instance.bottleneck])
-        result = {
-            'cav_key':
-                a_cav_key,
-            'cav_concept':
-                cav_concept,
-            'target_class':
-                target_class,
-            'i_up':
-                i_up,
-            'val_directional_dirs_abs_mean':
-                np.mean(np.abs(val_directional_dirs)),
-            'val_directional_dirs_mean':
-                np.mean(val_directional_dirs),
-            'val_directional_dirs_std':
-                np.std(val_directional_dirs),
-            'note':
-                'alpha_%s ' % (alpha),
-            'alpha':
-                alpha,
-            'bottleneck':
-                bottleneck
-        }
+    cav_concept = concepts[0]
+
+    i_up = self.compute_tcav_score(
+        mymodel, target_class_for_compute_tcav_score, cav_concept,
+        cav_instance, acts[target_class][cav_instance.bottleneck])
+    val_directional_dirs = self.get_directional_dir(
+        mymodel, target_class_for_compute_tcav_score, cav_concept,
+        cav_instance, acts[target_class][cav_instance.bottleneck])
+    result = {
+        'cav_key':
+            a_cav_key,
+        'cav_concept':
+            cav_concept,
+        'target_class':
+            target_class,
+        'i_up':
+            i_up,
+        'val_directional_dirs_abs_mean':
+            np.mean(np.abs(val_directional_dirs)),
+        'val_directional_dirs_mean':
+            np.mean(val_directional_dirs),
+        'val_directional_dirs_std':
+            np.std(val_directional_dirs),
+        'note':
+            'alpha_%s ' % (alpha),
+        'alpha':
+            alpha,
+        'bottleneck':
+            bottleneck
+    }
     del acts
     return result
 
@@ -295,13 +295,22 @@ class TCAV(object):
             self.random_counterpart,
             num_random_exp=num_random_exp,
             random_concepts=random_concepts))
-    all_concepts_randoms, pairs_to_run_randoms = (
-        utils.process_what_to_run_expand(
-            utils.process_what_to_run_randoms(target_concept_pairs,
-                                              self.random_counterpart),
-            self.random_counterpart,
-            num_random_exp=num_random_exp,
-            random_concepts=random_concepts))
+
+    pairs_to_run_randoms = []
+    all_concepts_randoms = []
+
+    for i in range(num_random_exp):
+      all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
+          utils.process_what_to_run_expand(
+              utils.process_what_to_run_randoms(target_concept_pairs,
+                                                'random500_{}'.format(i)),
+              self.random_counterpart,
+              num_random_exp=num_random_exp - 1,
+              random_concepts=random_concepts))
+
+      pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)
+      all_concepts_randoms.extend(all_concepts_randoms_tmp)
+
     self.all_concepts = list(set(all_concepts_concepts + all_concepts_randoms))
     self.pairs_to_test = pairs_to_run_concepts + pairs_to_run_randoms
 

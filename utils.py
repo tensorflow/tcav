@@ -174,7 +174,7 @@ def print_results(results):
 
 # function to output all results both in a printed format, and in a 
 # matplotlib graph when in interactive mode
-def print_results_graph(results, min_p_val):
+def print_results_graph(results, min_p_val, num_random_exp):
   """Helper function to organize results.
   When run in a notebook, outputs a matplotlib bar plot of the
   TCAV scores for all bottlenecks for each concept, replacing the
@@ -204,19 +204,20 @@ def print_results_graph(results, min_p_val):
     result_summary[result['cav_concept']][result['bottleneck']].append(result)
     
     # store random
-    if result['cav_concept'] == 'random':
+    #TODO use random_concepts
+    if 'random500_' in result['cav_concept']:
       if result['bottleneck'] not in random_i_ups:
         random_i_ups[result['bottleneck']] = []
         
       random_i_ups[result['bottleneck']].append(result['i_up'])
     
   # to plot, must massage data again 
-  fig, ax = plt.subplots()
   plot_data = {}
-    
+
   # print concepts and classes with indentation
   for concept in result_summary:
-    if 'random' is not concept:
+    # TODO use random_concepts
+    if 'random500_' not in concept:
       print(2 * " ", "Concept =", concept)
 
       for bottleneck in result_summary[concept]:
@@ -246,9 +247,9 @@ def print_results_graph(results, min_p_val):
             "random was %.2f (+- %.2f). p-val = %.3f") % (
             bottleneck, np.mean(i_ups), np.std(i_ups),
             np.mean(random_i_ups[bottleneck]), np.std(random_i_ups[bottleneck]), p_val))
-      
-  # subtract 1 for random concept
-  num_concepts = len(result_summary) - 1
+
+  # subtract number of random experiments
+  num_concepts = len(result_summary) - num_random_exp
   num_bottlenecks = len(plot_data)
   bar_width = 0.35
     
@@ -256,6 +257,9 @@ def print_results_graph(results, min_p_val):
   # the final plot doesn't have any parts overlapping
   index = np.arange(num_concepts) * bar_width * (num_bottlenecks + 1)
 
+  # matplotlib
+  fig, ax = plt.subplots()
+    
   # draw all bottlenecks individually
   for i, [bn, vals] in enumerate(plot_data.items()):
     bar = ax.bar(index + i * bar_width, vals['bn_vals'], bar_width, yerr=vals['bn_stds'], label=bn)
