@@ -41,7 +41,6 @@ mytcav = tcav.TCAV(sess,
                    bottlenecks,
                    act_gen,
                    alphas,
-                   random_counterpart,
                    cav_dir=cav_dir,
                    num_random_exp=2)
 

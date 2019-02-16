@@ -66,7 +66,6 @@ class TcavTest(googletest.TestCase):
                        self.bottleneck,
                        self.hparams)
     self.cav.cavs = [[1., 2., 3.,]]
-    self.random_counterpart = 'random500_1'
     self.activation_generator = None
     self.mymodel = TcavTest_model()
     self.act_gen = TcavTest_ActGen(self.mymodel)
@@ -76,8 +75,7 @@ class TcavTest(googletest.TestCase):
                        self.concepts,
                        [self.bottleneck],
                        self.act_gen,
-                       [self.hparams.alpha],
-                       self.random_counterpart)
+                       [self.hparams.alpha])
 
   def test_get_direction_dir_sign(self):
     self.assertFalse(TCAV.get_direction_dir_sign(self.mymodel,

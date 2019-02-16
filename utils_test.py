@@ -32,7 +32,6 @@ class UtilsTest(googletest.TestCase):
   def test_process_what_to_run_expand(self):
     all_concepts, pairs_to_test = process_what_to_run_expand(
         self.pair_to_test_one_concept,
-        self.random_counterpart,
         num_random_exp=2)
     self.assertEqual(
         sorted(all_concepts),
@@ -46,7 +45,6 @@ class UtilsTest(googletest.TestCase):
   def test_process_what_to_run_expand_specify_dirs(self):
     all_concepts, pairs_to_test = process_what_to_run_expand(
         self.pair_to_test_one_concept,
-        self.random_counterpart,
         num_random_exp=2,
         random_concepts=['random_dir1', 'random_dir2'])
     self.assertEqual(
