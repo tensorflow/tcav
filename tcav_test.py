@@ -117,16 +117,15 @@ class TcavTest(googletest.TestCase):
                              'c1',
                              'c2',
                              'random500_0',
-                             'random500_1',
-                             'random500_2'])
+                             'random500_1'])
                     )
     self.assertEqual(sorted(self.mytcav.pairs_to_test),
                     sorted([('t1',['c1', 'random500_0']),
-                            ('t1',['c1', 'random500_2']),
+                            ('t1',['c1', 'random500_1']),
                             ('t1',['c2', 'random500_0']),
-                            ('t1',['c2', 'random500_2']),
-                            ('t1',['random500_1', 'random500_0']),
-                            ('t1',['random500_1', 'random500_2'])
+                            ('t1',['c2', 'random500_1']),
+                            ('t1',['random500_0', 'random500_1']),
+                            ('t1',['random500_1', 'random500_0'])
                            ]))
 
   def test__process_what_to_run_expand_specify_dirs(self):
@@ -138,7 +137,6 @@ class TcavTest(googletest.TestCase):
                      sorted(['t1',
                              'c1',
                              'c2',
-                             'random500_1',
                              'random_dir1',
                              'random_dir2'])
                     )
@@ -147,8 +145,8 @@ class TcavTest(googletest.TestCase):
                             ('t1',['c1', 'random_dir2']),
                             ('t1',['c2', 'random_dir1']),
                             ('t1',['c2', 'random_dir2']),
-                            ('t1',['random500_1', 'random_dir1']),
-                            ('t1',['random500_1', 'random_dir2'])
+                            ('t1',['random_dir1', 'random_dir2']),
+                            ('t1',['random_dir2', 'random_dir1'])
                            ]))
 
   def test_get_params(self):

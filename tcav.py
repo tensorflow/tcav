@@ -294,12 +294,17 @@ class TCAV(object):
     pairs_to_run_randoms = []
     all_concepts_randoms = []
 
+    # ith random concept
+    def get_random_concept(i):
+      return (random_concepts[i] if random_concepts
+              else 'random500_{}'.format(i))
+
     # TODO random500_1 vs random500_0 is the same as 1 - (random500_0 vs random500_1)
-    for i in range(num_random_exp):
+    for i in xrange(num_random_exp):
       all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
           utils.process_what_to_run_expand(
               utils.process_what_to_run_randoms(target_concept_pairs,
-                                                'random500_{}'.format(i)),
+                                                get_random_concept(i)),
               num_random_exp=num_random_exp - 1,
               random_concepts=random_concepts))
 
