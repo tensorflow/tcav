@@ -165,6 +165,9 @@ class TCAV(object):
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
 
+    if random_concepts:
+      num_random_exp = len(random_concepts)
+
     # make pairs to test.
     self._process_what_to_run_expand(num_random_exp=num_random_exp,
                                      random_concepts=random_concepts)

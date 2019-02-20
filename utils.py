@@ -154,6 +154,11 @@ def print_results(results, num_random_exp=100, random_concepts=None, min_p_val=0
 
   Args:
     results: dictionary of results from TCAV runs.
+    output_plot: True to output a plot using matplotlib, False to just
+                 output a text summary. If false, the following kwargs
+                 are not needed
+    num_random_exp: number of random experiments that were run
+    random_concepts: list of random experiments that were run
     min_p_val: minimum p value for statistical significance
   """
   # print class, it will be the same for all
