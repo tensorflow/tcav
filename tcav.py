@@ -136,6 +136,7 @@ class TCAV(object):
                bottlenecks,
                activation_generator,
                alphas,
+               random_counterpart=None,
                cav_dir=None,
                num_random_exp=5,
                random_concepts=None):
@@ -150,6 +151,9 @@ class TCAV(object):
                             activations.
       alphas: list of hyper parameters to run
       cav_dir: the path to store CAVs
+      random_counterpart: the random concept to run against the concepts for
+                  statistical testing. If supplied, only this set will be
+                  used as a positive set for calculating random TCAVs
       num_random_exp: number of random experiments to compare against.
       random_concepts: A list of names of random concepts for the random
                        experiments to draw from. Optional, if not provided, the
@@ -164,6 +168,7 @@ class TCAV(object):
     self.mymodel = activation_generator.get_model()
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
+    self.random_counterpart = random_counterpart
 
     if random_concepts:
       num_random_exp = len(random_concepts)
@@ -288,10 +293,13 @@ class TCAV(object):
 
     target_concept_pairs = [(self.target, self.concepts)]
 
+    # take away 1 random experiment if the random counterpart already in random concepts
     all_concepts_concepts, pairs_to_run_concepts = (
         utils.process_what_to_run_expand(
             utils.process_what_to_run_concepts(target_concept_pairs),
-            num_random_exp=num_random_exp,
+            self.random_counterpart,
+            num_random_exp=num_random_exp - (1 if random_concepts and
+                  self.random_counterpart in random_concepts else 0),
             random_concepts=random_concepts))
 
     pairs_to_run_randoms = []
@@ -302,13 +310,28 @@ class TCAV(object):
       return (random_concepts[i] if random_concepts
               else 'random500_{}'.format(i))
 
-    # TODO random500_1 vs random500_0 is the same as 1 - (random500_0 vs random500_1)
-    for i in xrange(num_random_exp):
+    if self.random_counterpart is None:
+      # TODO random500_1 vs random500_0 is the same as 1 - (random500_0 vs random500_1)
+      for i in xrange(num_random_exp):
+        all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
+            utils.process_what_to_run_expand(
+                utils.process_what_to_run_randoms(target_concept_pairs,
+                                                  get_random_concept(i)),
+                num_random_exp=num_random_exp - 1,
+                random_concepts=random_concepts))
+
+        pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)
+        all_concepts_randoms.extend(all_concepts_randoms_tmp)
+
+    else:
+      # run only random_counterpart as the positve set for random experiments
       all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
           utils.process_what_to_run_expand(
               utils.process_what_to_run_randoms(target_concept_pairs,
-                                                get_random_concept(i)),
-              num_random_exp=num_random_exp - 1,
+                                                self.random_counterpart),
+              self.random_counterpart,
+              num_random_exp=num_random_exp - (1 if random_concepts and
+                  self.random_counterpart in random_concepts else 0),
               random_concepts=random_concepts))
 
       pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)

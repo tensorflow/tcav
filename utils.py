@@ -47,6 +47,7 @@ def flatten(nested_list):
 
 
 def process_what_to_run_expand(pairs_to_test,
+                               random_counterpart=None,
                                num_random_exp=100,
                                random_concepts=None):
   """Get concept vs. random or random vs. random pairs to run.
@@ -60,6 +61,7 @@ def process_what_to_run_expand(pairs_to_test,
 
   Args:
     pairs_to_test: [(target, [concept1, concept2,...]),...]
+    random_counterpart: random concept that will be compared to the concept.
     num_random_exp: number of random experiments to run against each concept.
     random_concepts: A list of names of random concepts for the random
                      experiments to draw from. Optional, if not provided, the
@@ -81,7 +83,8 @@ def process_what_to_run_expand(pairs_to_test,
       i = 0
       while len(new_pairs_to_test_t) < min(100, num_random_exp):
         # make sure that we are not comparing the same thing to each other.
-        if concept_set[0] != get_random_concept(i):
+        if concept_set[0] != get_random_concept(i) \
+            and random_counterpart != get_random_concept(i):
           new_pairs_to_test_t.append(
               (target, [concept_set[0], get_random_concept(i)]))
         i += 1
@@ -146,21 +149,36 @@ def process_what_to_run_randoms(pairs_to_test, random_counterpart):
 
 # helper functions to write summary files
 # optionally output plot with matplotlib
-def print_results(results, num_random_exp=100, random_concepts=None, min_p_val=0.05, output_plot=False):
+def print_results(results, random_counterpart=None, random_concepts=None, num_random_exp=100,
+    min_p_val=0.05, output_plot=False):
   """Helper function to organize results.
   When run in a notebook, outputs a matplotlib bar plot of the
   TCAV scores for all bottlenecks for each concept, replacing the
   bars with asterisks when the TCAV score is not statistically significant.
+  If you ran TCAV with a random_counterpart, supply it here, otherwise supply random_concepts.
 
   Args:
     results: dictionary of results from TCAV runs.
     output_plot: True to output a plot using matplotlib, False to just
                  output a text summary. If false, the following kwargs
                  are not needed
-    num_random_exp: number of random experiments that were run
-    random_concepts: list of random experiments that were run
+    random_counterpart: name of the random_counterpart used, if it was used. 
+    random_concepts: list of random experiments that were run. 
+    num_random_exp: number of random experiments that were run.
     min_p_val: minimum p value for statistical significance
   """
+
+  # helper function, returns if this is a random concept
+  def is_random_concept(concept):
+    if random_counterpart:
+      return random_counterpart == concept
+    
+    elif random_concepts:
+      return concept in random_concepts
+
+    else:
+      return 'random500_' in concept
+
   # print class, it will be the same for all
   print("Class =", results[0]['target_class'])
 
@@ -179,11 +197,9 @@ def print_results(results, num_random_exp=100, random_concepts=None, min_p_val=0
       result_summary[result['cav_concept']][result['bottleneck']] = []
     
     result_summary[result['cav_concept']][result['bottleneck']].append(result)
-    
+
     # store random
-    # check if random concepts are from a supplied list first
-    if (random_concepts and result['cav_concept'] in random_concepts) \
-        or (not random_concepts and 'random500_' in result['cav_concept']):
+    if is_random_concept(result['cav_concept']):
       if result['bottleneck'] not in random_i_ups:
         random_i_ups[result['bottleneck']] = []
         
@@ -196,8 +212,7 @@ def print_results(results, num_random_exp=100, random_concepts=None, min_p_val=0
   for concept in result_summary:
         
     # if not random
-    if (random_concepts and concept not in random_concepts) \
-        or (not random_concepts and 'random500_' not in concept):
+    if not is_random_concept(concept):
       print(" ", "Concept =", concept)
 
       for bottleneck in result_summary[concept]:
@@ -233,7 +248,9 @@ def print_results(results, num_random_exp=100, random_concepts=None, min_p_val=0
   import matplotlib.pyplot as plt
         
   # subtract number of random experiments
-  if random_concepts:
+  if random_counterpart:
+    num_concepts = len(result_summary) - 1
+  elif random_concepts:
     num_concepts = len(result_summary) - len(random_concepts)
   else: 
     num_concepts = len(result_summary) - num_random_exp
