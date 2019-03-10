@@ -148,20 +148,14 @@ def process_what_to_run_randoms(pairs_to_test, random_counterpart):
 
 
 # helper functions to write summary files
-# optionally output plot with matplotlib
 def print_results(results, random_counterpart=None, random_concepts=None, num_random_exp=100,
-    min_p_val=0.05, output_plot=False):
+    min_p_val=0.05):
   """Helper function to organize results.
-  When run in a notebook, outputs a matplotlib bar plot of the
-  TCAV scores for all bottlenecks for each concept, replacing the
-  bars with asterisks when the TCAV score is not statistically significant.
   If you ran TCAV with a random_counterpart, supply it here, otherwise supply random_concepts.
+  If you get unexpected output, make sure you are using the correct keywords.
 
   Args:
     results: dictionary of results from TCAV runs.
-    output_plot: True to output a plot using matplotlib, False to just
-                 output a text summary. If false, the following kwargs
-                 are not needed
     random_counterpart: name of the random_counterpart used, if it was used. 
     random_concepts: list of random experiments that were run. 
     num_random_exp: number of random experiments that were run.
@@ -205,9 +199,6 @@ def print_results(results, random_counterpart=None, random_concepts=None, num_ra
         
       random_i_ups[result['bottleneck']].append(result['i_up'])
     
-  # to plot, must massage data again 
-  plot_data = {}
-    
   # print concepts and classes with indentation
   for concept in result_summary:
         
@@ -221,71 +212,12 @@ def print_results(results, random_counterpart=None, random_concepts=None, num_ra
         # Calculate statistical significance
         _, p_val = ttest_ind(random_i_ups[bottleneck], i_ups)
                   
-        if bottleneck not in plot_data:
-          plot_data[bottleneck] = {'bn_vals': [], 'bn_stds': [], 'significant': []}
-
-        if p_val > min_p_val:
-          # statistically insignificant
-          plot_data[bottleneck]['bn_vals'].append(0.01)
-          plot_data[bottleneck]['bn_stds'].append(0)
-          plot_data[bottleneck]['significant'].append(False)
-            
-        else:
-          plot_data[bottleneck]['bn_vals'].append(np.mean(i_ups))
-          plot_data[bottleneck]['bn_stds'].append(np.std(i_ups))
-          plot_data[bottleneck]['significant'].append(True)
-
         print(3 * " ", "Bottleneck =", ("%s. TCAV Score = %.2f (+- %.2f), "
-            "random was %.2f (+- %.2f). p-val = %.3f") % (
+            "random was %.2f (+- %.2f). p-val = %.3f (%s)") % (
             bottleneck, np.mean(i_ups), np.std(i_ups),
             np.mean(random_i_ups[bottleneck]),
-            np.std(random_i_ups[bottleneck]), p_val))
-        
-  # plot
-  if not output_plot:
-    return
-
-  import matplotlib.pyplot as plt
-        
-  # subtract number of random experiments
-  if random_counterpart:
-    num_concepts = len(result_summary) - 1
-  elif random_concepts:
-    num_concepts = len(result_summary) - len(random_concepts)
-  else: 
-    num_concepts = len(result_summary) - num_random_exp
-    
-  num_bottlenecks = len(plot_data)
-  bar_width = 0.35
-    
-  # create location for each bar. scale by an appropriate factor to ensure 
-  # the final plot doesn't have any parts overlapping
-  index = np.arange(num_concepts) * bar_width * (num_bottlenecks + 1)
-
-  # matplotlib
-  fig, ax = plt.subplots()
-    
-  # draw all bottlenecks individually
-  for i, [bn, vals] in enumerate(plot_data.items()):
-    bar = ax.bar(index + i * bar_width, vals['bn_vals'],
-        bar_width, yerr=vals['bn_stds'], label=bn)
-    
-    # draw stars to mark bars that are stastically insignificant to 
-    # show them as different from others
-    for j, significant in enumerate(vals['significant']):
-      if not significant:
-        ax.text(index[j] + i * bar_width - 0.1, 0.01, "*",
-            fontdict = {'weight': 'bold', 'size': 16,
-            'color': bar.patches[0].get_facecolor()})
-    
-  # set properties
-  ax.set_title('TCAV Scores for each concept and bottleneck')
-  ax.set_ylabel('TCAV Score')
-  ax.set_xticks(index + num_bottlenecks * bar_width / 2)
-  ax.set_xticklabels(tuple(result_summary))
-  ax.legend()
-  fig.tight_layout()
-  plt.show()
+            np.std(random_i_ups[bottleneck]), p_val,
+            "not significant" if p_val > min_p_val else "significant"))
 
 
 def make_dir_if_not_exists(directory):
