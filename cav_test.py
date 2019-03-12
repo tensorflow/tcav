@@ -23,6 +23,7 @@ from sklearn import linear_model
 from tensorflow.python.platform import flags
 from tensorflow.python.platform import googletest
 from cav import CAV, get_or_train_cav
+from tcav import xrange
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(name='test_tmpdir', default='/tmp',

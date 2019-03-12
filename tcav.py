@@ -136,7 +136,7 @@ class TCAV(object):
                bottlenecks,
                activation_generator,
                alphas,
-               random_counterpart,
+               random_counterpart=None,
                cav_dir=None,
                num_random_exp=5,
                random_concepts=None):
@@ -150,9 +150,10 @@ class TCAV(object):
       activation_generator: an ActivationGeneratorInterface instance to return
                             activations.
       alphas: list of hyper parameters to run
-      random_counterpart: the random concept to run against the concepts for
-                          statistical testing.
       cav_dir: the path to store CAVs
+      random_counterpart: the random concept to run against the concepts for
+                  statistical testing. If supplied, only this set will be
+                  used as a positive set for calculating random TCAVs
       num_random_exp: number of random experiments to compare against.
       random_concepts: A list of names of random concepts for the random
                        experiments to draw from. Optional, if not provided, the
@@ -164,10 +165,13 @@ class TCAV(object):
     self.activation_generator = activation_generator
     self.cav_dir = cav_dir
     self.alphas = alphas
-    self.random_counterpart = random_counterpart
     self.mymodel = activation_generator.get_model()
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
+    self.random_counterpart = random_counterpart
+
+    if random_concepts:
+      num_random_exp = len(random_concepts)
 
     # make pairs to test.
     self._process_what_to_run_expand(num_random_exp=num_random_exp,
@@ -195,7 +199,8 @@ class TCAV(object):
       results = pool.map(lambda param: self._run_single_set(param), self.params)
     else:
       results = []
-      for param in self.params:
+      for i, param in enumerate(self.params):
+        tf.logging.info('Running param %s of %s' % (i, len(self.params)))
         results.append(self._run_single_set(param))
     tf.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
@@ -239,36 +244,36 @@ class TCAV(object):
                             cav_hparams.alpha)
     target_class_for_compute_tcav_score = target_class
 
-    for cav_concept in concepts:
-      if cav_concept is self.random_counterpart or 'random' not in cav_concept:
-        i_up = self.compute_tcav_score(
-            mymodel, target_class_for_compute_tcav_score, cav_concept,
-            cav_instance, acts[target_class][cav_instance.bottleneck])
-        val_directional_dirs = self.get_directional_dir(
-            mymodel, target_class_for_compute_tcav_score, cav_concept,
-            cav_instance, acts[target_class][cav_instance.bottleneck])
-        result = {
-            'cav_key':
-                a_cav_key,
-            'cav_concept':
-                cav_concept,
-            'target_class':
-                target_class,
-            'i_up':
-                i_up,
-            'val_directional_dirs_abs_mean':
-                np.mean(np.abs(val_directional_dirs)),
-            'val_directional_dirs_mean':
-                np.mean(val_directional_dirs),
-            'val_directional_dirs_std':
-                np.std(val_directional_dirs),
-            'note':
-                'alpha_%s ' % (alpha),
-            'alpha':
-                alpha,
-            'bottleneck':
-                bottleneck
-        }
+    cav_concept = concepts[0]
+
+    i_up = self.compute_tcav_score(
+        mymodel, target_class_for_compute_tcav_score, cav_concept,
+        cav_instance, acts[target_class][cav_instance.bottleneck])
+    val_directional_dirs = self.get_directional_dir(
+        mymodel, target_class_for_compute_tcav_score, cav_concept,
+        cav_instance, acts[target_class][cav_instance.bottleneck])
+    result = {
+        'cav_key':
+            a_cav_key,
+        'cav_concept':
+            cav_concept,
+        'target_class':
+            target_class,
+        'i_up':
+            i_up,
+        'val_directional_dirs_abs_mean':
+            np.mean(np.abs(val_directional_dirs)),
+        'val_directional_dirs_mean':
+            np.mean(val_directional_dirs),
+        'val_directional_dirs_std':
+            np.std(val_directional_dirs),
+        'note':
+            'alpha_%s ' % (alpha),
+        'alpha':
+            alpha,
+        'bottleneck':
+            bottleneck
+    }
     del acts
     return result
 
@@ -288,19 +293,50 @@ class TCAV(object):
 
     target_concept_pairs = [(self.target, self.concepts)]
 
+    # take away 1 random experiment if the random counterpart already in random concepts
     all_concepts_concepts, pairs_to_run_concepts = (
         utils.process_what_to_run_expand(
             utils.process_what_to_run_concepts(target_concept_pairs),
             self.random_counterpart,
-            num_random_exp=num_random_exp,
+            num_random_exp=num_random_exp - (1 if random_concepts and
+                  self.random_counterpart in random_concepts else 0),
             random_concepts=random_concepts))
-    all_concepts_randoms, pairs_to_run_randoms = (
-        utils.process_what_to_run_expand(
-            utils.process_what_to_run_randoms(target_concept_pairs,
-                                              self.random_counterpart),
-            self.random_counterpart,
-            num_random_exp=num_random_exp,
-            random_concepts=random_concepts))
+
+    pairs_to_run_randoms = []
+    all_concepts_randoms = []
+
+    # ith random concept
+    def get_random_concept(i):
+      return (random_concepts[i] if random_concepts
+              else 'random500_{}'.format(i))
+
+    if self.random_counterpart is None:
+      # TODO random500_1 vs random500_0 is the same as 1 - (random500_0 vs random500_1)
+      for i in xrange(num_random_exp):
+        all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
+            utils.process_what_to_run_expand(
+                utils.process_what_to_run_randoms(target_concept_pairs,
+                                                  get_random_concept(i)),
+                num_random_exp=num_random_exp - 1,
+                random_concepts=random_concepts))
+
+        pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)
+        all_concepts_randoms.extend(all_concepts_randoms_tmp)
+
+    else:
+      # run only random_counterpart as the positve set for random experiments
+      all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
+          utils.process_what_to_run_expand(
+              utils.process_what_to_run_randoms(target_concept_pairs,
+                                                self.random_counterpart),
+              self.random_counterpart,
+              num_random_exp=num_random_exp - (1 if random_concepts and
+                  self.random_counterpart in random_concepts else 0),
+              random_concepts=random_concepts))
+
+      pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)
+      all_concepts_randoms.extend(all_concepts_randoms_tmp)
+
     self.all_concepts = list(set(all_concepts_concepts + all_concepts_randoms))
     self.pairs_to_test = pairs_to_run_concepts + pairs_to_run_randoms
 

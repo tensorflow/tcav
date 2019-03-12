@@ -66,18 +66,25 @@ class TcavTest(googletest.TestCase):
                        self.bottleneck,
                        self.hparams)
     self.cav.cavs = [[1., 2., 3.,]]
-    self.random_counterpart = 'random500_1'
     self.activation_generator = None
     self.mymodel = TcavTest_model()
     self.act_gen = TcavTest_ActGen(self.mymodel)
+    self.random_counterpart = 'random500_1'
 
     self.mytcav = TCAV(None,
                        self.target,
                        self.concepts,
                        [self.bottleneck],
                        self.act_gen,
-                       [self.hparams.alpha],
-                       self.random_counterpart)
+                       [self.hparams.alpha])
+
+    self.mytcav_random_counterpart = TCAV(None,
+                                          self.target,
+                                          self.concepts,
+                                          [self.bottleneck],
+                                          self.act_gen,
+                                          [self.hparams.alpha],
+                                          self.random_counterpart)
 
   def test_get_direction_dir_sign(self):
     self.assertFalse(TCAV.get_direction_dir_sign(self.mymodel,
@@ -119,10 +126,32 @@ class TcavTest(googletest.TestCase):
                              'c1',
                              'c2',
                              'random500_0',
+                             'random500_1'])
+                    )
+    self.assertEqual(sorted(self.mytcav.pairs_to_test),
+                    sorted([('t1',['c1', 'random500_0']),
+                            ('t1',['c1', 'random500_1']),
+                            ('t1',['c2', 'random500_0']),
+                            ('t1',['c2', 'random500_1']),
+                            ('t1',['random500_0', 'random500_1']),
+                            ('t1',['random500_1', 'random500_0'])
+                           ]))
+
+  def test__process_what_to_run_expand_random_counterpart(self):
+    # _process_what_to_run_expand stores results to all_concepts,
+    # and pairs_to_test.
+    # test when random_counterpart is supplied
+    self.mytcav_random_counterpart._process_what_to_run_expand(
+        num_random_exp=2)
+    self.assertEqual(sorted(self.mytcav_random_counterpart.all_concepts),
+                     sorted(['t1',
+                             'c1',
+                             'c2',
+                             'random500_0',
                              'random500_1',
                              'random500_2'])
                     )
-    self.assertEqual(sorted(self.mytcav.pairs_to_test),
+    self.assertEqual(sorted(self.mytcav_random_counterpart.pairs_to_test),
                     sorted([('t1',['c1', 'random500_0']),
                             ('t1',['c1', 'random500_2']),
                             ('t1',['c2', 'random500_0']),
@@ -140,11 +169,33 @@ class TcavTest(googletest.TestCase):
                      sorted(['t1',
                              'c1',
                              'c2',
-                             'random500_1',
                              'random_dir1',
                              'random_dir2'])
                     )
     self.assertEqual(sorted(self.mytcav.pairs_to_test),
+                    sorted([('t1',['c1', 'random_dir1']),
+                            ('t1',['c1', 'random_dir2']),
+                            ('t1',['c2', 'random_dir1']),
+                            ('t1',['c2', 'random_dir2']),
+                            ('t1',['random_dir1', 'random_dir2']),
+                            ('t1',['random_dir2', 'random_dir1'])
+                           ]))
+
+  def test__process_what_to_run_expand_specify_dirs_random_concepts(self):
+    # _process_what_to_run_expand stores results to all_concepts,
+    # and pairs_to_test.
+    # test when random_counterpart is supplied
+    self.mytcav_random_counterpart._process_what_to_run_expand(
+        num_random_exp=2, random_concepts=['random_dir1', 'random_dir2'])
+    self.assertEqual(sorted(self.mytcav_random_counterpart.all_concepts),
+                     sorted(['t1',
+                             'c1',
+                             'c2',
+                             'random500_1',
+                             'random_dir1',
+                             'random_dir2'])
+                    )
+    self.assertEqual(sorted(self.mytcav_random_counterpart.pairs_to_test),
                     sorted([('t1',['c1', 'random_dir1']),
                             ('t1',['c1', 'random_dir2']),
                             ('t1',['c2', 'random_dir1']),

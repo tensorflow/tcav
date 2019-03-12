@@ -18,6 +18,7 @@ limitations under the License.
 """
 import numpy as np
 import tensorflow as tf
+from scipy.stats import ttest_ind
 
 
 def create_session(timeout=10000, interactive=True):
@@ -46,7 +47,7 @@ def flatten(nested_list):
 
 
 def process_what_to_run_expand(pairs_to_test,
-                               random_counterpart,
+                               random_counterpart=None,
                                num_random_exp=100,
                                random_concepts=None):
   """Get concept vs. random or random vs. random pairs to run.
@@ -83,7 +84,7 @@ def process_what_to_run_expand(pairs_to_test,
       while len(new_pairs_to_test_t) < min(100, num_random_exp):
         # make sure that we are not comparing the same thing to each other.
         if concept_set[0] != get_random_concept(
-           i) and random_counterpart != get_random_concept(i):
+            i) and random_counterpart != get_random_concept(i):
           new_pairs_to_test_t.append(
               (target, [concept_set[0], get_random_concept(i)]))
         i += 1
@@ -130,7 +131,7 @@ def process_what_to_run_randoms(pairs_to_test, random_counterpart):
   Args:
     pairs_to_test: a list of concepts to be tested and a target (e.g,
      [ ("target1",  ["concept1", "concept2", "concept3"]),...])
-    random_counterpart: random concept that will be compared to the concept.
+    random_counterpart: a random concept that will be compared to the concept.
 
   Returns:
     return pairs to test:
@@ -147,27 +148,76 @@ def process_what_to_run_randoms(pairs_to_test, random_counterpart):
 
 
 # helper functions to write summary files
-def print_results(results):
+def print_results(results, random_counterpart=None, random_concepts=None, num_random_exp=100,
+    min_p_val=0.05):
   """Helper function to organize results.
+  If you ran TCAV with a random_counterpart, supply it here, otherwise supply random_concepts.
+  If you get unexpected output, make sure you are using the correct keywords.
 
   Args:
     results: dictionary of results from TCAV runs.
+    random_counterpart: name of the random_counterpart used, if it was used. 
+    random_concepts: list of random experiments that were run. 
+    num_random_exp: number of random experiments that were run.
+    min_p_val: minimum p value for statistical significance
   """
-  result_summary = {'random': []}
-  for result in results:
-    if 'random' in result['cav_concept']:
-      result_summary['random'].append(result)
-    else:
-      if result['cav_concept'] not in result_summary:
-        result_summary[result['cav_concept']] = []
-      result_summary[result['cav_concept']].append(result)
-  random_i_ups = [item['i_up'] for item in result_summary['random']]
 
+  # helper function, returns if this is a random concept
+  def is_random_concept(concept):
+    if random_counterpart:
+      return random_counterpart == concept
+    
+    elif random_concepts:
+      return concept in random_concepts
+
+    else:
+      return 'random500_' in concept
+
+  # print class, it will be the same for all
+  print("Class =", results[0]['target_class'])
+
+  # prepare data
+  # dict with keys of concepts containing dict with bottlenecks
+  result_summary = {}
+    
+  # random
+  random_i_ups = {}
+    
+  for result in results:
+    if result['cav_concept'] not in result_summary:
+      result_summary[result['cav_concept']] = {}
+    
+    if result['bottleneck'] not in result_summary[result['cav_concept']]:
+      result_summary[result['cav_concept']][result['bottleneck']] = []
+    
+    result_summary[result['cav_concept']][result['bottleneck']].append(result)
+
+    # store random
+    if is_random_concept(result['cav_concept']):
+      if result['bottleneck'] not in random_i_ups:
+        random_i_ups[result['bottleneck']] = []
+        
+      random_i_ups[result['bottleneck']].append(result['i_up'])
+    
+  # print concepts and classes with indentation
   for concept in result_summary:
-    if 'random' is not concept:
-      i_ups = [item['i_up'] for item in result_summary[concept]]
-      print('%s: TCAV score: %.2f (+- %.2f), random was %.2f' % (
-          concept, np.mean(i_ups), np.std(i_ups), np.mean(random_i_ups)))
+        
+    # if not random
+    if not is_random_concept(concept):
+      print(" ", "Concept =", concept)
+
+      for bottleneck in result_summary[concept]:
+        i_ups = [item['i_up'] for item in result_summary[concept][bottleneck]]
+        
+        # Calculate statistical significance
+        _, p_val = ttest_ind(random_i_ups[bottleneck], i_ups)
+                  
+        print(3 * " ", "Bottleneck =", ("%s. TCAV Score = %.2f (+- %.2f), "
+            "random was %.2f (+- %.2f). p-val = %.3f (%s)") % (
+            bottleneck, np.mean(i_ups), np.std(i_ups),
+            np.mean(random_i_ups[bottleneck]),
+            np.std(random_i_ups[bottleneck]), p_val,
+            "not significant" if p_val > min_p_val else "significant"))
 
 
 def make_dir_if_not_exists(directory):

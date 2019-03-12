@@ -73,7 +73,7 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
         acts_path = os.path.join(self.acts_dir, 'acts_{}_{}'.format(
             concept, bottleneck_name)) if self.acts_dir else None
         if acts_path and tf.gfile.Exists(acts_path):
-          with tf.gfile.Open(acts_path) as f:
+          with tf.gfile.Open(acts_path, 'rb') as f:
             acts[concept][bottleneck_name] = np.load(f).squeeze()
             tf.logging.info('Loaded {} shape {}'.format(
                 acts_path, acts[concept][bottleneck_name].shape))
@@ -121,8 +121,9 @@ class ImageActivationGenerator(ActivationGeneratorBase):
       tf.logging.error('Cannot find file: {}'.format(filename))
       return None
     try:
-      img = np.array(PIL.Image.open(tf.gfile.Open(filename)).resize(
-          shape, PIL.Image.BILINEAR))
+      # ensure image has no transparency channel
+      img = np.array(PIL.Image.open(tf.gfile.Open(filename, 'rb')).convert(
+          'RGB').resize(shape, PIL.Image.BILINEAR))
       # Normalize pixel values to between 0 and 1.
       img = np.float32(img) / 255.0
       if not (len(img.shape) == 3 and img.shape[2] == 3):
@@ -165,13 +166,16 @@ class ImageActivationGenerator(ActivationGeneratorBase):
           lambda filename: self.load_image_from_file(filename, shape),
           filenames[:max_imgs])
       imgs = [img for img in imgs if img is not None]
+      if len(imgs) <= 1:
+        raise ValueError('You must have more than 1 image in each class to run TCAV.')
     else:
       for filename in filenames:
         img = self.load_image_from_file(filename, shape)
         if img is not None:
           imgs.append(img)
-        if len(imgs) >= max_imgs:
+        if len(imgs) <= 1:
+          raise ValueError('You must have more than 1 image in each class to run TCAV.')
+        elif len(imgs) >= max_imgs:
           break
 
     return np.array(imgs)
-
