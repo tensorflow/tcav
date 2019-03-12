@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 """Contains function for plotting results when used in a jupyter notebook.
+Requires matplotlib.
 """
 import numpy as np
 from scipy.stats import ttest_ind

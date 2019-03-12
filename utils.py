@@ -83,8 +83,8 @@ def process_what_to_run_expand(pairs_to_test,
       i = 0
       while len(new_pairs_to_test_t) < min(100, num_random_exp):
         # make sure that we are not comparing the same thing to each other.
-        if concept_set[0] != get_random_concept(i) \
-            and random_counterpart != get_random_concept(i):
+        if concept_set[0] != get_random_concept(
+            i) and random_counterpart != get_random_concept(i):
           new_pairs_to_test_t.append(
               (target, [concept_set[0], get_random_concept(i)]))
         i += 1
