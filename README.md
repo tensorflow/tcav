@@ -49,8 +49,9 @@ results = mytcav.run()
 
 ## How to run unit tests
 
-```python cav_test.py``` (requires scikit-learn and scipy installed)
+Run these commands from the parent of this `tcav` directory:
+```python -m tcav.cav_test``` (requires scikit-learn and scipy installed)
 
-```python tcav_test.py```
+```python -m tcav.tcav_test```
 
-```python utils_test.py```
+```python -m tcav.utils_test```
