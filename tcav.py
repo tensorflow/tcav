@@ -13,20 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-"""Class that perfoms TCAV (Testing with concept activation vectors).
-
-https://arxiv.org/abs/1711.11279
-One class can perform TCAV for (target, [concept1, concept2,...]).
-"""
+from __future__ import absolute_import
 from multiprocessing import dummy as multiprocessing
 import time
-from cav import CAV
-from cav import get_or_train_cav
+from . import run_params
+from . import utils
+from .cav import CAV
+from .cav import get_or_train_cav
 import numpy as np
-import run_params
 import tensorflow as tf
-import utils
 
 try:
     xrange          # Python 2
@@ -41,6 +36,7 @@ class TCAV(object):
   TCAV scores. These are static because they might be useful independently,
   for instance, if you are developing a new interpretability method using
   CAVs.
+  See https://arxiv.org/abs/1711.11279
   """
 
   @staticmethod
