@@ -11,23 +11,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""Tests cav.py"""
-
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import os
 import pickle
 import shutil
 import numpy as np
 import tensorflow as tf
 from sklearn import linear_model
+from six.moves import range
+from tcav.cav import CAV, get_or_train_cav
 from tensorflow.python.platform import flags
 from tensorflow.python.platform import googletest
-from cav import CAV, get_or_train_cav
-
-try:
-    xrange          # Python 2
-except NameError:
-    xrange = range  # Python 3
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(name='test_tmpdir', default='/tmp',
@@ -127,7 +123,7 @@ class CavTest(googletest.TestCase):
     idx_concept1 = self.cav.concepts.index('concept1')
     cav_directly_from_member = self.cav.cavs[idx_concept1]
     cav_via_get_direction = self.cav.get_direction('concept1')
-    for i in xrange(len(cav_directly_from_member)):
+    for i in range(len(cav_directly_from_member)):
       self.assertEqual(cav_directly_from_member[i], cav_via_get_direction[i])
 
   def test_train(self):

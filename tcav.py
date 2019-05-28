@@ -13,20 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from __future__ import absolute_import
-from multiprocessing import dummy as multiprocessing
-import time
-from . import run_params
-from . import utils
-from .cav import CAV
-from .cav import get_or_train_cav
-import numpy as np
-import tensorflow as tf
 
-try:
-    xrange          # Python 2
-except NameError:
-    xrange = range  # Python 3
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from multiprocessing import dummy as multiprocessing
+from six.moves import range
+from tcav.cav import CAV
+from tcav.cav import get_or_train_cav
+from tcav import run_params
+from tcav import utils
+import numpy as np
+import time
+import tensorflow as tf
 
 
 class TCAV(object):
@@ -94,7 +93,7 @@ class TCAV(object):
           class_acts)
       return sum(directions) / float(len(class_acts))
     else:
-      for i in xrange(len(class_acts)):
+      for i in range(len(class_acts)):
         act = np.expand_dims(class_acts[i], 0)
         if TCAV.get_direction_dir_sign(mymodel, act, cav, concept, class_id):
           count += 1
@@ -118,7 +117,7 @@ class TCAV(object):
     """
     class_id = mymodel.label_to_id(target_class)
     directional_dir_vals = []
-    for i in xrange(len(class_acts)):
+    for i in range(len(class_acts)):
       act = np.expand_dims(class_acts[i], 0)
       grad = np.reshape(
           mymodel.get_gradient(act, [class_id], cav.bottleneck), -1)
@@ -308,7 +307,7 @@ class TCAV(object):
 
     if self.random_counterpart is None:
       # TODO random500_1 vs random500_0 is the same as 1 - (random500_0 vs random500_1)
-      for i in xrange(num_random_exp):
+      for i in range(num_random_exp):
         all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
             utils.process_what_to_run_expand(
                 utils.process_what_to_run_randoms(target_concept_pairs,

@@ -14,20 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-""" Activation generator helper classes for TCAV"""
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 from multiprocessing import dummy as multiprocessing
 import os.path
 import numpy as np
 import PIL.Image
+import six
 import tensorflow as tf
 
 
-class ActivationGeneratorInterface(object):
+class ActivationGeneratorInterface(six.with_metaclass(ABCMeta, object)):
   """Interface for an activation generator for a model"""
-  __metaclass__ = ABCMeta
 
   @abstractmethod
   def process_and_load_activations(self, bottleneck_names, concepts):

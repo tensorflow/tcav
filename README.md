@@ -30,6 +30,9 @@ Yes. TCAV is designed to make sense to everyone - as long as they can understand
 ### Sounds good. Do I need to change my network to use TCAV?
 No. You don't need to change or retrain your network to use TCAV.
 
+## Requirements
+See requirements.txt for python dependencies.
+
 ## How to use TCAV
 
 See Run TCAV.ipynb for step by step guide.
@@ -50,7 +53,7 @@ results = mytcav.run()
 ## How to run unit tests
 
 Run these commands from the parent of this `tcav` directory:
-```python -m tcav.cav_test``` (requires scikit-learn and scipy installed)
+```python -m tcav.cav_test```
 
 ```python -m tcav.tcav_test```
 

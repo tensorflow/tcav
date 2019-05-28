@@ -14,11 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""Collects utility functions for TCAV.
-"""
+from scipy.stats import ttest_ind
 import numpy as np
 import tensorflow as tf
-from scipy.stats import ttest_ind
 
 
 def create_session(timeout=10000, interactive=True):

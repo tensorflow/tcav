@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""Contains function for plotting results when used in a jupyter notebook.
-Requires matplotlib.
-"""
-import numpy as np
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from scipy.stats import ttest_ind
+import numpy as np
 import matplotlib.pyplot as plt
 
 
