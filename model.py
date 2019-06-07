@@ -218,7 +218,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
         'Scope "%s" already exists. Provide explicit scope names when '
         'importing multiple instances of the model.') % scope
 
-    graph_def = tf.GraphDef.FromString(tf.gfile.Open(saved_path).read())
+    graph_def = tf.GraphDef.FromString(tf.gfile.Open(saved_path, 'rb').read())
 
     with tf.name_scope(scope) as sc:
       t_input, t_prep_input = PublicImageModelWrapper.create_input(
