@@ -45,7 +45,7 @@ class CAV(object):
     Returns:
       TF.HParams for training.
     """
-    return tf.contrib.training.HParams(model_type='linear', alpha=.01)
+    return tf.contrib.training.HParams(model_type='linear', alpha=.01, max_iter=1000, tol=1e-3)
 
   @staticmethod
   def load_cav(cav_path):
@@ -166,7 +166,7 @@ class CAV(object):
         self.concepts, self.bottleneck, acts)
 
     if self.hparams.model_type == 'linear':
-      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha)
+      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha, max_iter=self.hparams.max_iter, tol=self.hparams.tol)
     elif self.hparams.model_type == 'logistic':
       lm = linear_model.LogisticRegression()
     else:
