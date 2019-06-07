@@ -1,8 +1,6 @@
-scipy>=1.2.1
-numpy>=1.13.3
-Pillow
-matplotlib>=3.0.3
-scikit_learn
-tensorflow>=1.13.1
-python>=2.7
-
+matplotlib=2.2.4
+Pillow=6.0.0
+scikit-learn=0.20.3
+scipy=1.2.1
+tensorflow=1.13.1
+numpy=1.13.3

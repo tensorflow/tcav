@@ -14,16 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""CAV class
-Class for constructing concept activation vector (CAV) for TCAV """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import os.path
 import pickle
 import numpy as np
+from six.moves import range
 from sklearn import linear_model
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
+from tcav import utils
 import tensorflow as tf
-import utils as utils
 
 
 class CAV(object):

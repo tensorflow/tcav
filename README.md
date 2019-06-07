@@ -30,9 +30,18 @@ Yes. TCAV is designed to make sense to everyone - as long as they can understand
 ### Sounds good. Do I need to change my network to use TCAV?
 No. You don't need to change or retrain your network to use TCAV.
 
+## Installation
+Tensorflow must be installed to use TCAV. But it isn't included in the TCAV pip package install_requires as a user may wish to use it
+with either the tensorflow or tensorflow-gpu package. So please pip install tensorflow or tensorflow-gpu as well as the tcav package.
+
+> pip install tcav
+
+### Requirements
+See requirements.txt for a list of python dependencies used in testing TCAV. These will all be installed during pip installation of tcav with the exception of tensorflow, as mentioned above.
+
 ## How to use TCAV
 
-See Run TCAV.ipynb for step by step guide.
+See Run TCAV.ipynb for step by step guide, after pip installing the tcav package.
 
 ```python
 mytcav = tcav.TCAV(sess,
@@ -56,8 +65,8 @@ results = mytcav.run()
 
 ## How to run unit tests
 
-```python cav_test.py``` (requires scikit-learn and scipy installed)
+```python -m tcav.cav_test```
 
-```python tcav_test.py```
+```python -m tcav.tcav_test```
 
-```python utils_test.py```
+```python -m tcav.utils_test```

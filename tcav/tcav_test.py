@@ -11,14 +11,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""Tests for tcav.py"""
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from tcav.activation_generator import ActivationGeneratorBase
+from tcav.cav import CAV
+from tcav.tcav import TCAV
+from tensorflow.python.platform import googletest
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.platform import googletest
-from cav import CAV
-from tcav import TCAV
-from activation_generator import ActivationGeneratorBase
 
 
 class TcavTest_model():
