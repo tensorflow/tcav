@@ -164,7 +164,7 @@ class CAV(object):
         self.concepts, self.bottleneck, acts)
 
     if self.hparams.model_type == 'linear':
-      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha, max_iter=self.hparams.max_iter)
+      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha, max_iter=self.hparams.max_iter, tol=self.hparams.tol)
     elif self.hparams.model_type == 'logistic':
       lm = linear_model.LogisticRegression()
     else:
