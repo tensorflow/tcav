@@ -4,3 +4,5 @@ Pillow
 matplotlib>=3.0.3
 scikit_learn
 tensorflow>=1.13.1
+python>=2.7
+
