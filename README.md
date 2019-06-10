@@ -70,3 +70,9 @@ results = mytcav.run()
 ```python -m tcav.tcav_test```
 
 ```python -m tcav.utils_test```
+
+## How to create a new version of the pip package
+
+1. Ensure the version in setup.py has been updated to a new version.
+2. Run `python setup.py bdist_wheel --python-tag py3` and `python setup.py bdist_wheel --python-tag py2`.
+3. Run `twine upload dist/*` to upload the py2 and py3 pip packages to PyPi.
