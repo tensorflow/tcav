@@ -94,6 +94,12 @@ class ImageActivationGenerator(ActivationGeneratorBase):
 
   def __init__(self, model, source_dir, acts_dir, max_examples=10,
                normalize_image=True):
+    """Initialize ImageActivationGenerator class."
+
+    Args:
+      normalize_image: A boolean indicating whether image pixels
+      should be normalized to between 0 and 1.
+    """
     self.source_dir = source_dir
     self.normalize_image = normalize_image
     super(ImageActivationGenerator, self).__init__(
