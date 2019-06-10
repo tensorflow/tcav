@@ -92,8 +92,16 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
 class ImageActivationGenerator(ActivationGeneratorBase):
   """Activation generator for a basic image model"""
 
-  def __init__(self, model, source_dir, acts_dir, max_examples=10):
+  def __init__(self, model, source_dir, acts_dir, max_examples=10,
+               normalize_image=True):
+    """Initialize ImageActivationGenerator class."
+
+    Args:
+      normalize_image: A boolean indicating whether image pixels
+      should be normalized to between 0 and 1.
+    """
     self.source_dir = source_dir
+    self.normalize_image = normalize_image
     super(ImageActivationGenerator, self).__init__(
         model, acts_dir, max_examples)
 
@@ -124,9 +132,10 @@ class ImageActivationGenerator(ActivationGeneratorBase):
     try:
       # ensure image has no transparency channel
       img = np.array(PIL.Image.open(tf.gfile.Open(filename, 'rb')).convert(
-          'RGB').resize(shape, PIL.Image.BILINEAR))
-      # Normalize pixel values to between 0 and 1.
-      img = np.float32(img) / 255.0
+          'RGB').resize(shape, PIL.Image.BILINEAR), dtype=np.float32)
+      if self.normalize_image:
+        # Normalize pixel values to between 0 and 1.
+        img = img / 255.0
       if not (len(img.shape) == 3 and img.shape[2] == 3):
         return None
       else:
