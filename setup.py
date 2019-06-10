@@ -20,7 +20,7 @@ with open(path.join(package_dir, 'README.md')) as f:
     long_description = f.read()
 
 setup(name='tcav',
-      version='0.1',
+      version='0.2',
       description='Testing with Concept Activation Vectors code',
       long_description=long_description,
       long_description_content_type='text/markdown',
