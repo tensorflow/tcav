@@ -58,7 +58,8 @@ def process_what_to_run_expand(pairs_to_test,
       (t1, [c2, random2],...]
 
   Args:
-    pairs_to_test: [(target, [concept1, concept2,...]),...]
+    pairs_to_test: [(target1, concept1), (target1, concept2), ...,
+                    (target2, concept1), (target2, concept2), ...]
     random_counterpart: random concept that will be compared to the concept.
     num_random_exp: number of random experiments to run against each concept.
     random_concepts: A list of names of random concepts for the random
