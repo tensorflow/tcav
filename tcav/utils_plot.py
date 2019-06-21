@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""Contains function for plotting results when used in a jupyter notebook.
-Requires matplotlib.
-"""
-import numpy as np
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from scipy.stats import ttest_ind
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -79,6 +79,7 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
     
   # to plot, must massage data again 
   plot_data = {}
+  plot_concepts = []
     
   # print concepts and classes with indentation
   for concept in result_summary:
@@ -86,6 +87,7 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
     # if not random
     if not is_random_concept(concept):
       print(" ", "Concept =", concept)
+      plot_concepts.append(concept)
 
       for bottleneck in result_summary[concept]:
         i_ups = [item['i_up'] for item in result_summary[concept][bottleneck]]
@@ -144,12 +146,12 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
         ax.text(index[j] + i * bar_width - 0.1, 0.01, "*",
             fontdict = {'weight': 'bold', 'size': 16,
             'color': bar.patches[0].get_facecolor()})
-    
+  print (plot_data)
   # set properties
   ax.set_title('TCAV Scores for each concept and bottleneck')
   ax.set_ylabel('TCAV Score')
   ax.set_xticks(index + num_bottlenecks * bar_width / 2)
-  ax.set_xticklabels(tuple(result_summary))
+  ax.set_xticklabels(plot_concepts)
   ax.legend()
   fig.tight_layout()
   plt.show()

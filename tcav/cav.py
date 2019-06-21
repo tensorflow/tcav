@@ -14,16 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""CAV class
-Class for constructing concept activation vector (CAV) for TCAV """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import os.path
 import pickle
 import numpy as np
+from six.moves import range
 from sklearn import linear_model
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
+from tcav import utils
 import tensorflow as tf
-import utils as utils
 
 
 class CAV(object):
@@ -43,7 +45,7 @@ class CAV(object):
     Returns:
       TF.HParams for training.
     """
-    return tf.contrib.training.HParams(model_type='linear', alpha=.01)
+    return tf.contrib.training.HParams(model_type='linear', alpha=.01, max_iter=1000, tol=1e-3)
 
   @staticmethod
   def load_cav(cav_path):
@@ -164,7 +166,7 @@ class CAV(object):
         self.concepts, self.bottleneck, acts)
 
     if self.hparams.model_type == 'linear':
-      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha)
+      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha, max_iter=self.hparams.max_iter, tol=self.hparams.tol)
     elif self.hparams.model_type == 'logistic':
       lm = linear_model.LogisticRegression()
     else:

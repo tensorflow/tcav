@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""A simple class to take care of various parameters for TCAV."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 
 class RunParams(object):

@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""Tests for utils.py"""
-
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from tensorflow.python.platform import googletest
-from utils import flatten, process_what_to_run_expand, process_what_to_run_concepts, process_what_to_run_randoms
+from tcav.utils import flatten, process_what_to_run_expand, process_what_to_run_concepts, process_what_to_run_randoms
 
 
 class UtilsTest(googletest.TestCase):

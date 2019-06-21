@@ -14,19 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""Model wrapper for TCAV."""
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
+from six.moves import zip
 import numpy as np
+import six
 import tensorflow as tf
 
-class ModelWrapper(object):
+class ModelWrapper(six.with_metaclass(ABCMeta, object)):
   """Simple wrapper of the for models with session object for TCAV.
 
     Supports easy inference with no need to deal with the feed_dicts.
   """
-  __metaclass__ = ABCMeta
 
   @abstractmethod
   def __init__(self):
@@ -218,7 +220,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
         'Scope "%s" already exists. Provide explicit scope names when '
         'importing multiple instances of the model.') % scope
 
-    graph_def = tf.GraphDef.FromString(tf.gfile.Open(saved_path).read())
+    graph_def = tf.GraphDef.FromString(tf.gfile.Open(saved_path, 'rb').read())
 
     with tf.name_scope(scope) as sc:
       t_input, t_prep_input = PublicImageModelWrapper.create_input(
@@ -227,8 +229,8 @@ class PublicImageModelWrapper(ImageModelWrapper):
       graph_inputs = {}
       graph_inputs[endpoints['input']] = t_prep_input
       myendpoints = tf.import_graph_def(
-          graph_def, graph_inputs, endpoints.values(), name=sc)
-      myendpoints = dict(zip(endpoints.keys(), myendpoints))
+          graph_def, graph_inputs, list(endpoints.values()), name=sc)
+      myendpoints = dict(list(zip(list(endpoints.keys()), myendpoints)))
       myendpoints['input'] = t_input
     return myendpoints
 

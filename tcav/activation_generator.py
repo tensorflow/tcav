@@ -14,20 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-""" Activation generator helper classes for TCAV"""
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 from multiprocessing import dummy as multiprocessing
 import os.path
 import numpy as np
 import PIL.Image
+import six
 import tensorflow as tf
 
 
-class ActivationGeneratorInterface(object):
+class ActivationGeneratorInterface(six.with_metaclass(ABCMeta, object)):
   """Interface for an activation generator for a model"""
-  __metaclass__ = ABCMeta
 
   @abstractmethod
   def process_and_load_activations(self, bottleneck_names, concepts):
@@ -91,8 +92,16 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
 class ImageActivationGenerator(ActivationGeneratorBase):
   """Activation generator for a basic image model"""
 
-  def __init__(self, model, source_dir, acts_dir, max_examples=10):
+  def __init__(self, model, source_dir, acts_dir, max_examples=10,
+               normalize_image=True):
+    """Initialize ImageActivationGenerator class."
+
+    Args:
+      normalize_image: A boolean indicating whether image pixels
+      should be normalized to between 0 and 1.
+    """
     self.source_dir = source_dir
+    self.normalize_image = normalize_image
     super(ImageActivationGenerator, self).__init__(
         model, acts_dir, max_examples)
 
@@ -123,9 +132,10 @@ class ImageActivationGenerator(ActivationGeneratorBase):
     try:
       # ensure image has no transparency channel
       img = np.array(PIL.Image.open(tf.gfile.Open(filename, 'rb')).convert(
-          'RGB').resize(shape, PIL.Image.BILINEAR))
-      # Normalize pixel values to between 0 and 1.
-      img = np.float32(img) / 255.0
+          'RGB').resize(shape, PIL.Image.BILINEAR), dtype=np.float32)
+      if self.normalize_image:
+        # Normalize pixel values to between 0 and 1.
+        img = img / 255.0
       if not (len(img.shape) == 3 and img.shape[2] == 3):
         return None
       else:
