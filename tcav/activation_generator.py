@@ -183,9 +183,9 @@ class ImageActivationGenerator(ActivationGeneratorBase):
         img = self.load_image_from_file(filename, shape)
         if img is not None:
           imgs.append(img)
-        if len(imgs) <= 1:
-          raise ValueError('You must have more than 1 image in each class to run TCAV.')
-        elif len(imgs) >= max_imgs:
+        if len(imgs) >= max_imgs:
           break
+      if len(imgs) <= 1:
+        raise ValueError('You must have more than 1 image in each class to run TCAV.')
 
     return np.array(imgs)
