@@ -310,10 +310,12 @@ def get_or_train_cav(concepts,
     if not overwrite and tf.gfile.Exists(cav_path):
       tf.logging.info('CAV already exists: {}'.format(cav_path))
       cav_instance = CAV.load_cav(cav_path)
+      tf.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
       return cav_instance
 
   tf.logging.info('Training CAV {} - {} alpha {}'.format(
       concepts, bottleneck, cav_hparams.alpha))
   cav_instance = CAV(concepts, bottleneck, cav_hparams, cav_path)
   cav_instance.train({c: acts[c] for c in concepts})
+  tf.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
   return cav_instance
