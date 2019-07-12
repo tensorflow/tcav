@@ -39,7 +39,7 @@ class TCAV(object):
   """
 
   @staticmethod
-  def get_direction_dir_sign(mymodel, act, cav, concept, class_id):
+  def get_direction_dir_sign(mymodel, act, cav, concept, class_id, example):
     """Get the sign of directional derivative.
 
     Args:
@@ -48,12 +48,14 @@ class TCAV(object):
         cav: an instance of cav
         concept: one concept
         class_id: index of the class of interest (target) in logit layer.
+        example: example corresponding to the given activation
 
     Returns:
         sign of the directional derivative
     """
     # Grad points in the direction which DECREASES probability of class
-    grad = np.reshape(mymodel.get_gradient(act, [class_id], cav.bottleneck), -1)
+    grad = np.reshape(mymodel.get_gradient(
+        act, [class_id], cav.bottleneck, example), -1)
     dot_prod = np.dot(grad, cav.get_direction(concept))
     return dot_prod < 0
 
@@ -63,6 +65,7 @@ class TCAV(object):
                          concept,
                          cav,
                          class_acts,
+                         examples,
                          run_parallel=True,
                          num_workers=20):
     """Compute TCAV score.
@@ -72,7 +75,10 @@ class TCAV(object):
       target_class: one target class
       concept: one concept
       cav: an instance of cav
-      class_acts: activations of the images in the target class.
+      class_acts: activations of the examples in the target class where
+        examples[i] corresponds to class_acts[i]
+      examples: an array of examples of the target class where examples[i]
+        corresponds to class_acts[i]
       run_parallel: run this parallel fashion
       num_workers: number of workers if we run in parallel.
 
@@ -85,22 +91,23 @@ class TCAV(object):
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
       directions = pool.map(
-          lambda act: TCAV.get_direction_dir_sign(mymodel,
-                                                  [act],
-                                                  cav,
-                                                  concept,
-                                                  class_id),
-          class_acts)
+          lambda i: TCAV.get_direction_dir_sign(
+              mymodel, np.expand_dims(class_acts[i], 0),
+              cav, concept, class_id, examples[i]),
+          range(len(class_acts)))
       return sum(directions) / float(len(class_acts))
     else:
       for i in range(len(class_acts)):
         act = np.expand_dims(class_acts[i], 0)
-        if TCAV.get_direction_dir_sign(mymodel, act, cav, concept, class_id):
+        example = examples[i]
+        if TCAV.get_direction_dir_sign(
+            mymodel, act, cav, concept, class_id, example):
           count += 1
       return float(count) / float(len(class_acts))
 
   @staticmethod
-  def get_directional_dir(mymodel, target_class, concept, cav, class_acts):
+  def get_directional_dir(
+      mymodel, target_class, concept, cav, class_acts, examples):
     """Return the list of values of directional derivatives.
 
        (Only called when the values are needed as a referece)
@@ -110,7 +117,10 @@ class TCAV(object):
       target_class: one target class
       concept: one concept
       cav: an instance of cav
-      class_acts: activations of the images in the target class.
+      class_acts: activations of the examples in the target class where
+        examples[i] corresponds to class_acts[i]
+      examples: an array of examples of the target class where examples[i]
+        corresponds to class_acts[i]
 
     Returns:
       list of values of directional derivatives.
@@ -119,8 +129,9 @@ class TCAV(object):
     directional_dir_vals = []
     for i in range(len(class_acts)):
       act = np.expand_dims(class_acts[i], 0)
+      example = examples[i]
       grad = np.reshape(
-          mymodel.get_gradient(act, [class_id], cav.bottleneck), -1)
+          mymodel.get_gradient(act, [class_id], cav.bottleneck, example), -1)
       directional_dir_vals.append(np.dot(grad, cav.get_direction(concept)))
     return directional_dir_vals
 
@@ -243,10 +254,12 @@ class TCAV(object):
 
     i_up = self.compute_tcav_score(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
-        cav_instance, acts[target_class][cav_instance.bottleneck])
+        cav_instance, acts[target_class][cav_instance.bottleneck],
+        activation_generator.get_examples_for_concept(target_class))
     val_directional_dirs = self.get_directional_dir(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
-        cav_instance, acts[target_class][cav_instance.bottleneck])
+        cav_instance, acts[target_class][cav_instance.bottleneck],
+        activation_generator.get_examples_for_concept(target_class))
     result = {
         'cav_key':
             a_cav_key,
@@ -262,6 +275,8 @@ class TCAV(object):
             np.mean(val_directional_dirs),
         'val_directional_dirs_std':
             np.std(val_directional_dirs),
+        'val_directional_dirs':
+            val_directional_dirs,
         'note':
             'alpha_%s ' % (alpha),
         'alpha':

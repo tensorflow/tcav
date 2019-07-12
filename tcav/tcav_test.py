@@ -29,7 +29,7 @@ class TcavTest_model():
   def __init__(self):
     self.model_name = 'test_model'
 
-  def get_gradient(self, act, class_id, bottleneck):
+  def get_gradient(self, act, class_id, bottleneck, example):
     return act
 
   def label_to_id(self, target_class):
@@ -57,6 +57,7 @@ class TcavTest(googletest.TestCase):
 
   def setUp(self):
     self.acts = np.array([[0, 1., 2.]])
+    self.examples = [None, None, None]
     self.concepts = ['c1', 'c2']
     self.target = 't1'
     self.class_id = 0
@@ -92,7 +93,8 @@ class TcavTest(googletest.TestCase):
                                                  self.acts,
                                                  self.cav,
                                                  self.concepts[0],
-                                                 self.class_id))
+                                                 self.class_id,
+                                                 None))
 
 
   def test_compute_tcav_score(self):
@@ -101,6 +103,7 @@ class TcavTest(googletest.TestCase):
                                     self.concepts[0],
                                     self.cav,
                                     self.acts,
+                                    self.examples,
                                     run_parallel=False)
     self.assertAlmostEqual(0., score)
 
@@ -109,7 +112,8 @@ class TcavTest(googletest.TestCase):
                                                 self.target,
                                                 self.concepts[0],
                                                 self.cav,
-                                                self.acts)
+                                                self.acts,
+                                                self.examples)
     self.assertAlmostEqual(8., directional_dirs[0])
 
   def test__run_single_set(self):
