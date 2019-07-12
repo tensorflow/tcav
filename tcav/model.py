@@ -61,7 +61,8 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
       acts: activation of the bottleneck
       y: index of the logit layer
       bottleneck_name: name of the bottleneck to get gradient wrt.
-      example: input example. Unused by default.
+      example: input example. Unused by default. Necessary for getting gradients
+        from certain models, such as BERT.
 
     Returns:
       the gradient array.
