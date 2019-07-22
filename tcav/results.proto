@@ -1,0 +1,31 @@
+syntax = "proto2";
+
+package tcav.tcav;
+
+
+message Result {
+
+  message CAVaccuracies {
+    required float positive_set_accuracy = 1;
+    required float negative_set_accuracy = 2;
+    required float overall_accuracy = 3;
+  }
+
+  required string cav_key = 1;
+  required string cav_concept = 2;
+  required string negative_concept = 3;
+  required string target_class = 4;
+  required CAVaccuracies cav_accuracies = 5;
+  required float i_up = 6;
+  required float val_directional_dirs_abs_mean = 7;
+  required float val_directional_dirs_mean = 8;
+  required float val_directional_dirs_std = 9;
+  repeated  float val_directional_dirs = 10;
+  required string note = 11;
+  required float alpha = 12;
+  required string bottleneck = 13;
+}
+
+message Results {
+  repeated Result results = 1;
+}
