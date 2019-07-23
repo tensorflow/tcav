@@ -17,9 +17,7 @@ limitations under the License.
 from scipy.stats import ttest_ind
 import numpy as np
 import tensorflow as tf
-from tcav import Result
-from tcav import Results
-
+from tcav import results_pb2
 
 _KEYS = [
     "cav_key", "cav_concept", "negative_concept", "target_class", "i_up",
@@ -234,15 +232,15 @@ def make_dir_if_not_exists(directory):
 
 
 def result_to_proto(result):
-  """Given a TCAV results dict, convert to TCAVResults.
+  """Given a result dict, convert it to a tcav.Result proto.
 
   Args:
-    result: a dictionary returned by TCAV._run_single_set()
+    result: a dictionary returned by tcav._run_single_set()
 
   Returns:
-    TCAVResult proto
+    TCAV.Result proto
   """
-  result_proto = Result()
+  result_proto = tcav_results_pb2.Result()
   for key in _KEYS:
     setattr(result_proto, key, result[key])
   positive_set_name = result["cav_concept"]
@@ -259,7 +257,15 @@ def result_to_proto(result):
 
 
 def results_to_proto(results):
-  results_proto = Results()
+  """Given a list of result dicts, convert it to a tcav.Results proto.
+
+  Args:
+    results: a list of dictionaries returned by tcav.run()
+
+  Returns:
+    TCAV.Results proto
+  """
+  results_proto = tcav_results_pb2.Results()
   for result in results:
     results_proto.results.add(result_to_proto(result))
   return results_proto

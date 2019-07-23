@@ -192,9 +192,12 @@ class TCAV(object):
     Args:
       num_workers: number of workers to parallelize
       run_parallel: run this parallel.
+      return_proto: if True, returns results as a tcav.Results object; else,
+        return as a list of dicts.
 
     Returns:
-      results: result dictionary.
+      results: an object (either a tcav.Results object or a list of
+        dictionaries) containing metrics for TCAV results.
     """
     # for random exp,  a machine with cpu = 30, ram = 300G, disk = 10G and
     # pool worker 50 seems to work.
