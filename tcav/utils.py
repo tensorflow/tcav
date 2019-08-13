@@ -17,7 +17,7 @@ limitations under the License.
 from scipy.stats import ttest_ind
 import numpy as np
 import tensorflow as tf
-from tcav import results_pb2
+from tcav.results_pb2 import Result, Results
 
 _KEYS = [
     "cav_key", "cav_concept", "negative_concept", "target_class", "i_up",
@@ -240,7 +240,7 @@ def result_to_proto(result):
   Returns:
     TCAV.Result proto
   """
-  result_proto = tcav_results_pb2.Result()
+  result_proto = Result()
   for key in _KEYS:
     setattr(result_proto, key, result[key])
   positive_set_name = result["cav_concept"]
@@ -265,7 +265,7 @@ def results_to_proto(results):
   Returns:
     TCAV.Results proto
   """
-  results_proto = tcav_results_pb2.Results()
+  results_proto = Results()
   for result in results:
     results_proto.results.add(result_to_proto(result))
   return results_proto

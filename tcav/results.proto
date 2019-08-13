@@ -29,7 +29,7 @@ message Result {
   required float val_directional_dirs_abs_mean = 7;
   required float val_directional_dirs_mean = 8;
   required float val_directional_dirs_std = 9;
-  repeated  float val_directional_dirs = 10;
+  repeated float val_directional_dirs = 10;
 
   // alpha is the hyperparameter value used to train CAV
   // note is a string representation
