@@ -15,7 +15,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from tensorflow.python.platform import googletest
-from tcav import results_pb2
+from tcav.results_pb2 import Result, Results
 from tcav.utils import flatten, process_what_to_run_expand, process_what_to_run_concepts, process_what_to_run_randoms
 
 
@@ -90,7 +90,7 @@ class UtilsTest(googletest.TestCase):
         'bottleneck': 'b'
     }
     
-    result_proto = results_pb2.Results()
+    result_proto = Results()
     result_proto.cav_key = 'c1-c2-b-model-0.1'
     result_proto.cav_concept = 'c1'
     result_proto.negative_concept = 'c2'
@@ -107,7 +107,7 @@ class UtilsTest(googletest.TestCase):
     result_proto.cav_accuracies.positive_set_accuracy = .526
     result_proto.cav_accuracies.negative_set_accuracy = .414
     result_proto.cav_accuracies.overall_accuracy = .47
-    results_proto = results_pb2.Results()
+    results_proto = Results()
     results_proto.results.extend(result_proto)
 
     self.assertEqual(result_proto, results_to_proto(results))
