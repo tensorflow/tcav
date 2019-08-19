@@ -151,7 +151,7 @@ class TCAV(object):
     Args:
       sess: tensorflow session.
       target: one target class
-      concepts: one concept
+      concepts: A list of names of positive concept sets.
       bottlenecks: the name of a bottleneck of interest.
       activation_generator: an ActivationGeneratorInterface instance to return
                             activations.
@@ -164,6 +164,8 @@ class TCAV(object):
       random_concepts: A list of names of random concepts for the random
                        experiments to draw from. Optional, if not provided, the
                        names will be random500_{i} for i in num_random_exp.
+                       Relative TCAV can be performed by passing in the same
+                       sets for both concepts and random_concepts.
     """
     self.target = target
     self.concepts = concepts
@@ -175,6 +177,7 @@ class TCAV(object):
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
     self.random_counterpart = random_counterpart
+    self.relative_tcav = (set(concepts) == set(random_concepts))
 
     if random_concepts:
       num_random_exp = len(random_concepts)
@@ -304,12 +307,14 @@ class TCAV(object):
     target_concept_pairs = [(self.target, self.concepts)]
 
     # take away 1 random experiment if the random counterpart already in random concepts
+    # take away 1 random experiment if computing Relative TCAV
     all_concepts_concepts, pairs_to_run_concepts = (
         utils.process_what_to_run_expand(
             utils.process_what_to_run_concepts(target_concept_pairs),
             self.random_counterpart,
-            num_random_exp=num_random_exp - (1 if random_concepts and
-                  self.random_counterpart in random_concepts else 0),
+            num_random_exp=num_random_exp -
+            (1 if random_concepts and self.random_counterpart in random_concepts
+             else 0) - (1 if self.relative_tcav else 0),
             random_concepts=random_concepts))
 
     pairs_to_run_randoms = []
