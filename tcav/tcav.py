@@ -186,17 +186,18 @@ class TCAV(object):
     self.params = self.get_params()
     tf.logging.info('TCAV will %s params' % len(self.params))
 
-  def run(self, num_workers=10, run_parallel=False, return_proto=False):
+  def run(self, num_workers=10, run_parallel=False, overwrite=False, return_proto=False):
     """Run TCAV for all parameters (concept and random), write results to html.
 
     Args:
       num_workers: number of workers to parallelize
       run_parallel: run this parallel.
+      overwrite: if True, overwrite any saved CAV files.
       return_proto: if True, returns results as a tcav.Results object; else,
         return as a list of dicts.
 
     Returns:
-      results: an object (either a tcav.Results object or a list of
+      results: an object (either a Results proto object or a list of
         dictionaries) containing metrics for TCAV results.
     """
     # for random exp,  a machine with cpu = 30, ram = 300G, disk = 10G and
@@ -205,12 +206,12 @@ class TCAV(object):
     now = time.time()
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
-      results = pool.map(lambda param: self._run_single_set(param), self.params)
+      results = pool.map(lambda param: self._run_single_set(param, overwrite=overwrite), self.params)
     else:
       results = []
       for i, param in enumerate(self.params):
         tf.logging.info('Running param %s of %s' % (i, len(self.params)))
-        results.append(self._run_single_set(param))
+        results.append(self._run_single_set(param, overwrite=overwrite))
     tf.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
     if return_proto:
@@ -218,11 +219,12 @@ class TCAV(object):
     else:
       return results
 
-  def _run_single_set(self, param):
+  def _run_single_set(self, param, overwrite=False):
     """Run TCAV with provided for one set of (target, concepts).
 
     Args:
       param: parameters to run
+      overwrite: if True, overwrite any saved CAV files.
 
     Returns:
       a dictionary of results (panda frame)
@@ -245,7 +247,12 @@ class TCAV(object):
     cav_hparams = CAV.default_hparams()
     cav_hparams.alpha = alpha
     cav_instance = get_or_train_cav(
-        concepts, bottleneck, acts, cav_dir=cav_dir, cav_hparams=cav_hparams)
+        concepts,
+        bottleneck,
+        acts,
+        cav_dir=cav_dir,
+        cav_hparams=cav_hparams,
+        overwrite=overwrite)
 
     # clean up
     for c in concepts:
