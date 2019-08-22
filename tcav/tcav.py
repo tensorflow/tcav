@@ -186,15 +186,18 @@ class TCAV(object):
     self.params = self.get_params()
     tf.logging.info('TCAV will %s params' % len(self.params))
 
-  def run(self, num_workers=10, run_parallel=False):
+  def run(self, num_workers=10, run_parallel=False, return_proto=False):
     """Run TCAV for all parameters (concept and random), write results to html.
 
     Args:
       num_workers: number of workers to parallelize
       run_parallel: run this parallel.
+      return_proto: if True, returns results as a tcav.Results object; else,
+        return as a list of dicts.
 
     Returns:
-      results: result dictionary.
+      results: an object (either a tcav.Results object or a list of
+        dictionaries) containing metrics for TCAV results.
     """
     # for random exp,  a machine with cpu = 30, ram = 300G, disk = 10G and
     # pool worker 50 seems to work.
@@ -210,7 +213,10 @@ class TCAV(object):
         results.append(self._run_single_set(param))
     tf.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
-    return results
+    if return_proto:
+      return utils.results_to_proto(results)
+    else:
+      return results
 
   def _run_single_set(self, param):
     """Run TCAV with provided for one set of (target, concepts).
@@ -265,8 +271,12 @@ class TCAV(object):
             a_cav_key,
         'cav_concept':
             cav_concept,
+        'negative_concept':
+            concepts[1],
         'target_class':
             target_class,
+        'cav_accuracies':
+            cav_instance.accuracies,
         'i_up':
             i_up,
         'val_directional_dirs_abs_mean':

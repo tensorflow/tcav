@@ -17,6 +17,13 @@ limitations under the License.
 from scipy.stats import ttest_ind
 import numpy as np
 import tensorflow as tf
+from tcav_results.results_pb2 import Result, Results
+
+_KEYS = [
+    "cav_key", "cav_concept", "negative_concept", "target_class", "i_up",
+    "val_directional_dirs_abs_mean", "val_directional_dirs_mean",
+    "val_directional_dirs_std", "note", "alpha", "bottleneck"
+]
 
 
 def create_session(timeout=10000, interactive=True):
@@ -155,8 +162,8 @@ def print_results(results, random_counterpart=None, random_concepts=None, num_ra
 
   Args:
     results: dictionary of results from TCAV runs.
-    random_counterpart: name of the random_counterpart used, if it was used. 
-    random_concepts: list of random experiments that were run. 
+    random_counterpart: name of the random_counterpart used, if it was used.
+    random_concepts: list of random experiments that were run.
     num_random_exp: number of random experiments that were run.
     min_p_val: minimum p value for statistical significance
   """
@@ -165,7 +172,7 @@ def print_results(results, random_counterpart=None, random_concepts=None, num_ra
   def is_random_concept(concept):
     if random_counterpart:
       return random_counterpart == concept
-    
+
     elif random_concepts:
       return concept in random_concepts
 
@@ -178,39 +185,39 @@ def print_results(results, random_counterpart=None, random_concepts=None, num_ra
   # prepare data
   # dict with keys of concepts containing dict with bottlenecks
   result_summary = {}
-    
+
   # random
   random_i_ups = {}
-    
+
   for result in results:
     if result['cav_concept'] not in result_summary:
       result_summary[result['cav_concept']] = {}
-    
+
     if result['bottleneck'] not in result_summary[result['cav_concept']]:
       result_summary[result['cav_concept']][result['bottleneck']] = []
-    
+
     result_summary[result['cav_concept']][result['bottleneck']].append(result)
 
     # store random
     if is_random_concept(result['cav_concept']):
       if result['bottleneck'] not in random_i_ups:
         random_i_ups[result['bottleneck']] = []
-        
+
       random_i_ups[result['bottleneck']].append(result['i_up'])
-    
+
   # print concepts and classes with indentation
   for concept in result_summary:
-        
+
     # if not random
     if not is_random_concept(concept):
       print(" ", "Concept =", concept)
 
       for bottleneck in result_summary[concept]:
         i_ups = [item['i_up'] for item in result_summary[concept][bottleneck]]
-        
+
         # Calculate statistical significance
         _, p_val = ttest_ind(random_i_ups[bottleneck], i_ups)
-                  
+
         print(3 * " ", "Bottleneck =", ("%s. TCAV Score = %.2f (+- %.2f), "
             "random was %.2f (+- %.2f). p-val = %.3f (%s)") % (
             bottleneck, np.mean(i_ups), np.std(i_ups),
@@ -222,3 +229,43 @@ def print_results(results, random_counterpart=None, random_concepts=None, num_ra
 def make_dir_if_not_exists(directory):
   if not tf.gfile.Exists(directory):
     tf.gfile.MakeDirs(directory)
+
+
+def result_to_proto(result):
+  """Given a result dict, convert it to a tcav.Result proto.
+
+  Args:
+    result: a dictionary returned by tcav._run_single_set()
+
+  Returns:
+    TCAV.Result proto
+  """
+  result_proto = Result()
+  for key in _KEYS:
+    setattr(result_proto, key, result[key])
+  positive_set_name = result["cav_concept"]
+  negative_set_name = result["negative_concept"]
+  for val in result["val_directional_dirs"]:
+    result_proto.val_directional_dirs.append(val)
+  result_proto.cav_accuracies.positive_set_accuracy = result["cav_accuracies"][
+      positive_set_name]
+  result_proto.cav_accuracies.negative_set_accuracy = result["cav_accuracies"][
+      negative_set_name]
+  result_proto.cav_accuracies.overall_accuracy = result["cav_accuracies"][
+      "overall"]
+  return result_proto
+
+
+def results_to_proto(results):
+  """Given a list of result dicts, convert it to a tcav.Results proto.
+
+  Args:
+    results: a list of dictionaries returned by tcav.run()
+
+  Returns:
+    TCAV.Results proto
+  """
+  results_proto = Results()
+  for result in results:
+    results_proto.results.append(result_to_proto(result))
+  return results_proto
