@@ -78,7 +78,7 @@ class UtilsTest(googletest.TestCase):
         'cav_key': 'c1-c2-b-model-0.1',
         'cav_concept': 'c1',
         'negative_concept': 'c2',
-        'target_class': 't',
+        'target_class': 0,
         'cav_accuracies': {'c1': .526, 'c2': .414, 'overall': .47},
         'i_up': 0.342,
         'val_directional_dirs_abs_mean': 0.25,
@@ -94,7 +94,7 @@ class UtilsTest(googletest.TestCase):
     result_proto.cav_key = 'c1-c2-b-model-0.1'
     result_proto.cav_concept = 'c1'
     result_proto.negative_concept = 'c2'
-    result_proto.target_class = 't'
+    result_proto.target_class = 0
     result_proto.i_up = 0.342
     result_proto.val_directional_dirs_abs_mean = 0.25
     result_proto.val_directional_dirs_mean = 0.25
