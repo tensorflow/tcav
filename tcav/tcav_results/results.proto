@@ -20,7 +20,7 @@ message Result {
   optional string negative_concept = 3;
 
   // target class of the output layer
-  optional string target_class = 4;
+  optional int32 target_class = 4;
 
   optional CAVaccuracies cav_accuracies = 5;
 
