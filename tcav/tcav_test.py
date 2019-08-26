@@ -209,6 +209,29 @@ class TcavTest(googletest.TestCase):
                             ('t1',['random500_1', 'random_dir2'])
                            ]))
 
+  def test__process_what_to_run_expand_relative_tcav(self):
+    # _process_what_to_run_expand stores results to all_concepts,
+    # and pairs_to_test.
+    # test when concepts and random_concepts contain the same elements
+    concepts_relative = ['c1', 'c2', 'c3']
+    my_relative_tcav = TCAV(None,
+                            self.target,
+                            concepts_relative,
+                            [self.bottleneck],
+                            self.act_gen,
+                            [self.hparams.alpha],
+                            random_concepts=concepts_relative)
+    self.assertEqual(sorted(my_relative_tcav.all_concepts),
+                     sorted(['t1', 'c1', 'c2', 'c3']))
+    self.assertEqual(sorted(my_relative_tcav.pairs_to_test),
+                     sorted([('t1',['c1', 'c2']),
+                             ('t1',['c1', 'c3']),
+                             ('t1',['c2', 'c1']),
+                             ('t1',['c2', 'c3']),
+                             ('t1',['c3', 'c1']),
+                             ('t1',['c3', 'c2']),
+                             ]))
+
   def test_get_params(self):
     """Check if the first param was correct.
     """
