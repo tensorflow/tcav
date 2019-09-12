@@ -1,0 +1,45 @@
+syntax = "proto2";
+
+package tcav_results;
+
+message Result {
+
+  // contains the accuracies of the learned classifier
+  // for both positive and negative examples
+  message CAVaccuracies {
+    optional float positive_set_accuracy = 1;
+    optional float negative_set_accuracy = 2;
+    optional float overall_accuracy = 3;
+  }
+
+  //
+  optional string cav_key = 1;
+
+  // positive and negative concept sets
+  optional string cav_concept = 2;
+  optional string negative_concept = 3;
+
+  // target class of the output layer
+  optional int32 target_class = 4;
+
+  optional CAVaccuracies cav_accuracies = 5;
+
+  // CAV computation values
+  optional float i_up = 6;
+  optional float val_directional_dirs_abs_mean = 7;
+  optional float val_directional_dirs_mean = 8;
+  optional float val_directional_dirs_std = 9;
+  repeated float val_directional_dirs = 10;
+
+  // alpha is the hyperparameter value used to train CAV
+  // note is a string representation
+  optional string note = 11;
+  optional float alpha = 12;
+
+  // name of the bottleneck layer
+  optional string bottleneck = 13;
+}
+
+message Results {
+  repeated Result results = 1;
+}

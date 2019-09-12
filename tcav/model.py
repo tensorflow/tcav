@@ -54,13 +54,15 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
       self.bottlenecks_gradients[bn] = tf.gradients(
           self.loss, self.bottlenecks_tensors[bn])[0]
 
-  def get_gradient(self, acts, y, bottleneck_name):
+  def get_gradient(self, acts, y, bottleneck_name, example):
     """Return the gradient of the loss with respect to the bottleneck_name.
 
     Args:
       acts: activation of the bottleneck
       y: index of the logit layer
       bottleneck_name: name of the bottleneck to get gradient wrt.
+      example: input example. Unused by default. Necessary for getting gradients
+        from certain models, such as BERT.
 
     Returns:
       the gradient array.

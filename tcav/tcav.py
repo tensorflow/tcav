@@ -39,7 +39,7 @@ class TCAV(object):
   """
 
   @staticmethod
-  def get_direction_dir_sign(mymodel, act, cav, concept, class_id):
+  def get_direction_dir_sign(mymodel, act, cav, concept, class_id, example):
     """Get the sign of directional derivative.
 
     Args:
@@ -48,12 +48,14 @@ class TCAV(object):
         cav: an instance of cav
         concept: one concept
         class_id: index of the class of interest (target) in logit layer.
+        example: example corresponding to the given activation
 
     Returns:
         sign of the directional derivative
     """
     # Grad points in the direction which DECREASES probability of class
-    grad = np.reshape(mymodel.get_gradient(act, [class_id], cav.bottleneck), -1)
+    grad = np.reshape(mymodel.get_gradient(
+        act, [class_id], cav.bottleneck, example), -1)
     dot_prod = np.dot(grad, cav.get_direction(concept))
     return dot_prod < 0
 
@@ -63,6 +65,7 @@ class TCAV(object):
                          concept,
                          cav,
                          class_acts,
+                         examples,
                          run_parallel=True,
                          num_workers=20):
     """Compute TCAV score.
@@ -72,7 +75,10 @@ class TCAV(object):
       target_class: one target class
       concept: one concept
       cav: an instance of cav
-      class_acts: activations of the images in the target class.
+      class_acts: activations of the examples in the target class where
+        examples[i] corresponds to class_acts[i]
+      examples: an array of examples of the target class where examples[i]
+        corresponds to class_acts[i]
       run_parallel: run this parallel fashion
       num_workers: number of workers if we run in parallel.
 
@@ -85,22 +91,23 @@ class TCAV(object):
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
       directions = pool.map(
-          lambda act: TCAV.get_direction_dir_sign(mymodel,
-                                                  [act],
-                                                  cav,
-                                                  concept,
-                                                  class_id),
-          class_acts)
+          lambda i: TCAV.get_direction_dir_sign(
+              mymodel, np.expand_dims(class_acts[i], 0),
+              cav, concept, class_id, examples[i]),
+          range(len(class_acts)))
       return sum(directions) / float(len(class_acts))
     else:
       for i in range(len(class_acts)):
         act = np.expand_dims(class_acts[i], 0)
-        if TCAV.get_direction_dir_sign(mymodel, act, cav, concept, class_id):
+        example = examples[i]
+        if TCAV.get_direction_dir_sign(
+            mymodel, act, cav, concept, class_id, example):
           count += 1
       return float(count) / float(len(class_acts))
 
   @staticmethod
-  def get_directional_dir(mymodel, target_class, concept, cav, class_acts):
+  def get_directional_dir(
+      mymodel, target_class, concept, cav, class_acts, examples):
     """Return the list of values of directional derivatives.
 
        (Only called when the values are needed as a referece)
@@ -110,7 +117,10 @@ class TCAV(object):
       target_class: one target class
       concept: one concept
       cav: an instance of cav
-      class_acts: activations of the images in the target class.
+      class_acts: activations of the examples in the target class where
+        examples[i] corresponds to class_acts[i]
+      examples: an array of examples of the target class where examples[i]
+        corresponds to class_acts[i]
 
     Returns:
       list of values of directional derivatives.
@@ -119,8 +129,9 @@ class TCAV(object):
     directional_dir_vals = []
     for i in range(len(class_acts)):
       act = np.expand_dims(class_acts[i], 0)
+      example = examples[i]
       grad = np.reshape(
-          mymodel.get_gradient(act, [class_id], cav.bottleneck), -1)
+          mymodel.get_gradient(act, [class_id], cav.bottleneck, example), -1)
       directional_dir_vals.append(np.dot(grad, cav.get_direction(concept)))
     return directional_dir_vals
 
@@ -140,7 +151,7 @@ class TCAV(object):
     Args:
       sess: tensorflow session.
       target: one target class
-      concepts: one concept
+      concepts: A list of names of positive concept sets.
       bottlenecks: the name of a bottleneck of interest.
       activation_generator: an ActivationGeneratorInterface instance to return
                             activations.
@@ -153,6 +164,8 @@ class TCAV(object):
       random_concepts: A list of names of random concepts for the random
                        experiments to draw from. Optional, if not provided, the
                        names will be random500_{i} for i in num_random_exp.
+                       Relative TCAV can be performed by passing in the same
+                       value for both concepts and random_concepts.
     """
     self.target = target
     self.concepts = concepts
@@ -164,6 +177,7 @@ class TCAV(object):
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
     self.random_counterpart = random_counterpart
+    self.relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
 
     if random_concepts:
       num_random_exp = len(random_concepts)
@@ -175,15 +189,19 @@ class TCAV(object):
     self.params = self.get_params()
     tf.logging.info('TCAV will %s params' % len(self.params))
 
-  def run(self, num_workers=10, run_parallel=False):
+  def run(self, num_workers=10, run_parallel=False, overwrite=False, return_proto=False):
     """Run TCAV for all parameters (concept and random), write results to html.
 
     Args:
       num_workers: number of workers to parallelize
       run_parallel: run this parallel.
+      overwrite: if True, overwrite any saved CAV files.
+      return_proto: if True, returns results as a tcav.Results object; else,
+        return as a list of dicts.
 
     Returns:
-      results: result dictionary.
+      results: an object (either a Results proto object or a list of
+        dictionaries) containing metrics for TCAV results.
     """
     # for random exp,  a machine with cpu = 30, ram = 300G, disk = 10G and
     # pool worker 50 seems to work.
@@ -192,22 +210,26 @@ class TCAV(object):
     now = time.time()
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
-      for i, res in enumerate(pool.imap(lambda p: self._run_single_set(p), self.params),1):
+      for i, res in enumerate(pool.imap(lambda p: self._run_single_set(p, overwrite=overwrite), self.params),1):
         tf.logging.info('Finished running param %s of %s' % (i, len(self.params)))
         results.append(res)
     else:
       for i, param in enumerate(self.params):
         tf.logging.info('Running param %s of %s' % (i, len(self.params)))
-        results.append(self._run_single_set(param))
+        results.append(self._run_single_set(param, overwrite=overwrite))
     tf.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
-    return results
+    if return_proto:
+      return utils.results_to_proto(results)
+    else:
+      return results
 
-  def _run_single_set(self, param):
+  def _run_single_set(self, param, overwrite=False):
     """Run TCAV with provided for one set of (target, concepts).
 
     Args:
       param: parameters to run
+      overwrite: if True, overwrite any saved CAV files.
 
     Returns:
       a dictionary of results (panda frame)
@@ -230,7 +252,12 @@ class TCAV(object):
     cav_hparams = CAV.default_hparams()
     cav_hparams.alpha = alpha
     cav_instance = get_or_train_cav(
-        concepts, bottleneck, acts, cav_dir=cav_dir, cav_hparams=cav_hparams)
+        concepts,
+        bottleneck,
+        acts,
+        cav_dir=cav_dir,
+        cav_hparams=cav_hparams,
+        overwrite=overwrite)
 
     # clean up
     for c in concepts:
@@ -245,17 +272,23 @@ class TCAV(object):
 
     i_up = self.compute_tcav_score(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
-        cav_instance, acts[target_class][cav_instance.bottleneck])
+        cav_instance, acts[target_class][cav_instance.bottleneck],
+        activation_generator.get_examples_for_concept(target_class))
     val_directional_dirs = self.get_directional_dir(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
-        cav_instance, acts[target_class][cav_instance.bottleneck])
+        cav_instance, acts[target_class][cav_instance.bottleneck],
+        activation_generator.get_examples_for_concept(target_class))
     result = {
         'cav_key':
             a_cav_key,
         'cav_concept':
             cav_concept,
+        'negative_concept':
+            concepts[1],
         'target_class':
             target_class,
+        'cav_accuracies':
+            cav_instance.accuracies,
         'i_up':
             i_up,
         'val_directional_dirs_abs_mean':
@@ -264,6 +297,8 @@ class TCAV(object):
             np.mean(val_directional_dirs),
         'val_directional_dirs_std':
             np.std(val_directional_dirs),
+        'val_directional_dirs':
+            val_directional_dirs,
         'note':
             'alpha_%s ' % (alpha),
         'alpha':
@@ -291,12 +326,14 @@ class TCAV(object):
     target_concept_pairs = [(self.target, self.concepts)]
 
     # take away 1 random experiment if the random counterpart already in random concepts
+    # take away 1 random experiment if computing Relative TCAV
     all_concepts_concepts, pairs_to_run_concepts = (
         utils.process_what_to_run_expand(
             utils.process_what_to_run_concepts(target_concept_pairs),
             self.random_counterpart,
-            num_random_exp=num_random_exp - (1 if random_concepts and
-                  self.random_counterpart in random_concepts else 0),
+            num_random_exp=num_random_exp -
+            (1 if random_concepts and self.random_counterpart in random_concepts
+             else 0) - (1 if self.relative_tcav else 0),
             random_concepts=random_concepts))
 
     pairs_to_run_randoms = []
@@ -335,7 +372,7 @@ class TCAV(object):
       all_concepts_randoms.extend(all_concepts_randoms_tmp)
 
     self.all_concepts = list(set(all_concepts_concepts + all_concepts_randoms))
-    self.pairs_to_test = pairs_to_run_concepts + pairs_to_run_randoms
+    self.pairs_to_test = pairs_to_run_concepts if self.relative_tcav else pairs_to_run_concepts + pairs_to_run_randoms
 
   def get_params(self):
     """Enumerate parameters for the run function.

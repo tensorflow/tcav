@@ -20,6 +20,7 @@ from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 from multiprocessing import dummy as multiprocessing
+import os
 import os.path
 import numpy as np
 import PIL.Image
@@ -84,6 +85,7 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
           if acts_path:
             tf.logging.info('{} does not exist, Making one...'.format(
                 acts_path))
+            tf.gfile.MkDir(os.path.dirname(acts_path))
             with tf.gfile.Open(acts_path, 'w') as f:
               np.save(f, acts[concept][bottleneck_name], allow_pickle=False)
     return acts
@@ -183,9 +185,9 @@ class ImageActivationGenerator(ActivationGeneratorBase):
         img = self.load_image_from_file(filename, shape)
         if img is not None:
           imgs.append(img)
-        if len(imgs) <= 1:
-          raise ValueError('You must have more than 1 image in each class to run TCAV.')
-        elif len(imgs) >= max_imgs:
+        if len(imgs) >= max_imgs:
           break
+      if len(imgs) <= 1:
+        raise ValueError('You must have more than 1 image in each class to run TCAV.')
 
     return np.array(imgs)
