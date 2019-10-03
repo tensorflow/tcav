@@ -223,7 +223,7 @@ def print_results(results, random_counterpart=None, random_concepts=None, num_ra
             bottleneck, np.mean(i_ups), np.std(i_ups),
             np.mean(random_i_ups[bottleneck]),
             np.std(random_i_ups[bottleneck]), p_val,
-            "not significant" if p_val > min_p_val else "significant"))
+            "undefined" if np.isnan(p_val) else "not significant" if p_val > min_p_val else "significant"))
 
 
 def make_dir_if_not_exists(directory):
