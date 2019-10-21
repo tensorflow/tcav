@@ -23,6 +23,7 @@ from six.moves import zip
 import numpy as np
 import six
 import tensorflow as tf
+from google.protobuf import text_format
 
 class ModelWrapper(six.with_metaclass(ABCMeta, object)):
   """Simple wrapper of the for models with session object for TCAV.
@@ -31,7 +32,23 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
   """
 
   @abstractmethod
-  def __init__(self):
+  def __init__(self, model_path=None, node_dict=None):
+    """Initialize the wrapper.
+
+    Optionally create a session, load
+    the model from model_path to this session, and map the
+    input/output and bottleneck tensors.
+
+    Args:
+      model_path: one of the following: 1) Directory path to checkpoint 2)
+        Directory path to SavedModel 3) File path to frozen graph.pb 4) File
+        path to frozen graph.pbtxt
+      node_dict: mapping from a short name to full input/output and bottleneck
+        tensor names. Users should pass 'input' and 'prediction'
+        as keys and the corresponding input and prediction tensor
+        names as values in node_dict. Users can additionally pass bottleneck
+        tensor names for which gradient Ops will be added later.
+    """
     # A dictionary of bottleneck tensors.
     self.bottlenecks_tensors = None
     # A dictionary of input, 'logit' and prediction tensors.
@@ -45,6 +62,75 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     self.y_input = None
     # The tensor representing the loss (used to calculate derivative).
     self.loss = None
+    # If tensors in the loaded graph are prefixed with 'import/'
+    self.import_prefix = False
+
+    if model_path:
+      self._try_loading_model(model_path)
+    if node_dict:
+      self._find_ends_and_bottleneck_tensors(node_dict)
+
+  def _try_loading_model(self, model_path):
+    """ Load model from model_path.
+
+    TF models are often saved in one of the three major formats:
+      1) Checkpoints with ckpt.meta, ckpt.data, and ckpt.index.
+      2) SavedModel format with saved_model.pb and variables/.
+      3) Frozen graph in .pb or .pbtxt format.
+    When model_path is specified, model is loaded in one of the
+    three formats depending on the model_path. When model_path is
+    ommitted, child wrapper is responsible for loading the model.
+    """
+    try:
+      self.sess = tf.Session(graph=tf.Graph())
+      with self.sess.graph.as_default():
+        if tf.gfile.IsDirectory(model_path):
+          ckpt = tf.train.latest_checkpoint(model_path)
+          if ckpt:
+            tf.logging.info('Loading from the latest checkpoint.')
+            saver = tf.train.import_meta_graph(ckpt + '.meta')
+            saver.restore(self.sess, ckpt)
+          else:
+            tf.logging.info('Loading from SavedModel dir.')
+            tf.saved_model.loader.load(self.sess, ['serve'], model_path)
+        else:
+          input_graph_def = tf.GraphDef()
+          if model_path.endswith('.pb'):
+            tf.logging.info('Loading from frozen binary graph.')
+            with tf.gfile.FastGFile(model_path, 'rb') as f:
+              input_graph_def.ParseFromString(f.read())
+          else:
+            tf.logging.info('Loading from frozen text graph.')
+            with tf.gfile.FastGFile(model_path) as f:
+              text_format.Parse(f.read(), input_graph_def)
+          tf.import_graph_def(input_graph_def)
+          self.import_prefix = True
+
+    except Exception as e:
+      template = 'An exception of type {0} occurred ' \
+                 'when trying to load model from {1}. ' \
+                 'Arguments:\n{2!r}'
+      tf.logging.warn(template.format(type(e).__name__, model_path, e.args))
+
+  def _find_ends_and_bottleneck_tensors(self, node_dict):
+    """ Find tensors from the graph by their names.
+
+    Depending on how the model is loaded, tensors in the graph
+    may or may not have 'import/' prefix added to every tensor name.
+    This is true even if the tensors already have 'import/' prefix.
+    The 'ends' and 'bottlenecks_tensors' dictionary should map to tensors
+    with the according name.
+    """
+    self.bottlenecks_tensors = {}
+    self.ends = {}
+    for k, v in node_dict.iteritems():
+      if self.import_prefix:
+        v = 'import/' + v
+      tensor = self.sess.graph.get_operation_by_name(v.strip(':0')).outputs[0]
+      if k == 'input' or k == 'prediction':
+        self.ends[k] = tensor
+      else:
+        self.bottlenecks_tensors[k] = tensor
 
   def _make_gradient_tensors(self):
     """Makes gradient tensors for all bottleneck tensors.
@@ -108,15 +194,22 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     """
     return np.asarray(layer_acts).squeeze()
 
-  @abstractmethod
   def label_to_id(self, label):
-    """Convert label (string) to index in the logit layer (id)."""
-    pass
+    """Convert label (string) to index in the logit layer (id).
 
-  @abstractmethod
+    Override this method if label to id mapping is known. Otherwise,
+    default id 0 is used.
+    """
+    tf.logging.warn('label_to_id undefined. Defaults to returning 0.')
+    return 0
+
+
   def id_to_label(self, idx):
-    """Convert index in the logit layer (id) to label (string)."""
-    pass
+    """Convert index in the logit layer (id) to label (string).
+
+    Override this method if id to label mapping is known.
+    """
+    return str(idx)
 
   def run_examples(self, examples, bottleneck_name):
     """Get activations at a bottleneck for provided examples.
