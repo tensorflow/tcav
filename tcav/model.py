@@ -44,7 +44,10 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
         Directory path to SavedModel 3) File path to frozen graph.pb 4) File
         path to frozen graph.pbtxt
       node_dict: mapping from a short name to full input/output and bottleneck
-        tensor names.
+        tensor names. Users should pass 'input' and 'prediction'
+        as keys and the corresponding input and prediction tensor
+        names as values in node_dict. Users can additionally pass bottleneck
+        tensor names for which gradient Ops will be added later.
     """
     # A dictionary of bottleneck tensors.
     self.bottlenecks_tensors = None
@@ -114,6 +117,7 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
 
     Depending on how the model is loaded, tensors in the graph
     may or may not have 'import/' prefix added to every tensor name.
+    This is true even if the tensors already have 'import/' prefix.
     The 'ends' and 'bottlenecks_tensors' dictionary should map to tensors
     with the according name.
     """
