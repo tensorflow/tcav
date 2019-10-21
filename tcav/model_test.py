@@ -27,12 +27,6 @@ class ModelTest_model(ModelWrapper):
     super(ModelTest_model, self).__init__(
         model_path=model_path, node_dict=node_dict)
 
-  def label_to_id(self, target_class):
-    return 0
-
-  def id_to_label(self, idx):
-    return 0
-
 
 class ModelTest(googletest.TestCase):
 

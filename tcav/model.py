@@ -194,15 +194,22 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     """
     return np.asarray(layer_acts).squeeze()
 
-  @abstractmethod
   def label_to_id(self, label):
-    """Convert label (string) to index in the logit layer (id)."""
-    pass
+    """Convert label (string) to index in the logit layer (id).
 
-  @abstractmethod
+    Override this method if label to id mapping is known. Otherwise,
+    default id 0 is used.
+    """
+    tf.logging.warn('label_to_id undefined. Defaults to returning 0.')
+    return 0
+
+
   def id_to_label(self, idx):
-    """Convert index in the logit layer (id) to label (string)."""
-    pass
+    """Convert index in the logit layer (id) to label (string).
+
+    Override this method if id to label mapping is known.
+    """
+    return str(idx)
 
   def run_examples(self, examples, bottleneck_name):
     """Get activations at a bottleneck for provided examples.
