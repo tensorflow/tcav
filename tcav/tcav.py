@@ -209,12 +209,12 @@ class TCAV(object):
     now = time.time()
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
-      results = pool.map(lambda param: self._run_single_set(param, overwrite=overwrite), self.params)
+      results = pool.map(lambda param: self._run_single_set(param, overwrite=overwrite, run_parallel=run_parallel), self.params)
     else:
       results = []
       for i, param in enumerate(self.params):
         tf.logging.info('Running param %s of %s' % (i, len(self.params)))
-        results.append(self._run_single_set(param, overwrite=overwrite))
+        results.append(self._run_single_set(param, overwrite=overwrite, run_parallel=run_parallel))
     tf.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
     if return_proto:
@@ -222,12 +222,13 @@ class TCAV(object):
     else:
       return results
 
-  def _run_single_set(self, param, overwrite=False):
+  def _run_single_set(self, param, overwrite=False, run_parallel=False):
     """Run TCAV with provided for one set of (target, concepts).
 
     Args:
       param: parameters to run
       overwrite: if True, overwrite any saved CAV files.
+      run_parallel: run this parallel.
 
     Returns:
       a dictionary of results (panda frame)
@@ -271,7 +272,8 @@ class TCAV(object):
     i_up = self.compute_tcav_score(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
         cav_instance, acts[target_class][cav_instance.bottleneck],
-        activation_generator.get_examples_for_concept(target_class))
+        activation_generator.get_examples_for_concept(target_class),
+        run_parallel=run_parallel)
     val_directional_dirs = self.get_directional_dir(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
         cav_instance, acts[target_class][cav_instance.bottleneck],
