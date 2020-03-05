@@ -57,7 +57,7 @@ class CAV(object):
     Returns:
       CAV instance.
     """
-    with tf.gfile.Open(cav_path, 'rb') as pkl_file:
+    with tf.io.gfile.GFile(cav_path, 'rb') as pkl_file:
       save_dict = pickle.load(pkl_file)
 
     cav = CAV(save_dict['concepts'], save_dict['bottleneck'],
@@ -99,7 +99,7 @@ class CAV(object):
         cav_dir,
         CAV.cav_key(concepts, bottleneck, cav_hparams.model_type,
                     cav_hparams.alpha) + '.pkl')
-    return tf.gfile.Exists(cav_path)
+    return tf.io.gfile.exists(cav_path)
 
   @staticmethod
   def _create_cav_training_set(concepts, bottleneck, acts):
@@ -226,7 +226,7 @@ class CAV(object):
         'saved_path': self.save_path
     }
     if self.save_path is not None:
-      with tf.gfile.Open(self.save_path, 'w') as pkl_file:
+      with tf.io.gfile.GFile(self.save_path, 'w') as pkl_file:
         pickle.dump(save_dict, pkl_file)
     else:
       tf.logging.info('save_path is None. Not saving anything')
@@ -307,7 +307,7 @@ def get_or_train_cav(concepts,
         CAV.cav_key(concepts, bottleneck, cav_hparams.model_type,
                     cav_hparams.alpha).replace('/', '.') + '.pkl')
 
-    if not overwrite and tf.gfile.Exists(cav_path):
+    if not overwrite and tf.io.gfile.exists(cav_path):
       tf.logging.info('CAV already exists: {}'.format(cav_path))
       cav_instance = CAV.load_cav(cav_path)
       tf.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
