@@ -84,7 +84,7 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     try:
       self.sess = tf.Session(graph=tf.Graph())
       with self.sess.graph.as_default():
-        if tf.gfile.IsDirectory(model_path):
+        if tf.io.gfile.isdir(model_path):
           ckpt = tf.train.latest_checkpoint(model_path)
           if ckpt:
             tf.logging.info('Loading from the latest checkpoint.')
@@ -97,11 +97,11 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
           input_graph_def = tf.GraphDef()
           if model_path.endswith('.pb'):
             tf.logging.info('Loading from frozen binary graph.')
-            with tf.gfile.FastGFile(model_path, 'rb') as f:
+            with tf.io.gfile.GFile(model_path, 'rb') as f:
               input_graph_def.ParseFromString(f.read())
           else:
             tf.logging.info('Loading from frozen text graph.')
-            with tf.gfile.FastGFile(model_path) as f:
+            with tf.io.gfile.GFile(model_path) as f:
               text_format.Parse(f.read(), input_graph_def)
           tf.import_graph_def(input_graph_def)
           self.import_prefix = True
@@ -249,7 +249,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
                endpoints_dict,
                scope):
     super(PublicImageModelWrapper, self).__init__(image_shape)
-    self.labels = tf.gfile.Open(labels_path).read().splitlines()
+    self.labels = tf.io.gfile.GFile(labels_path).read().splitlines()
     self.ends = PublicImageModelWrapper.import_graph(model_fn_path,
                                                      endpoints_dict,
                                                      self.image_value_range,
@@ -315,7 +315,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
         'Scope "%s" already exists. Provide explicit scope names when '
         'importing multiple instances of the model.') % scope
 
-    graph_def = tf.GraphDef.FromString(tf.gfile.Open(saved_path, 'rb').read())
+    graph_def = tf.GraphDef.FromString(tf.io.gfile.GFile(saved_path, 'rb').read())
 
     with tf.name_scope(scope) as sc:
       t_input, t_prep_input = PublicImageModelWrapper.create_input(

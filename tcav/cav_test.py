@@ -26,7 +26,7 @@ from tensorflow.python.platform import flags
 from tensorflow.python.platform import googletest
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string(name='test_tmpdir', default='/tmp',
+flags.DEFINE_string(name='tcav_test_tmpdir', default='/tmp',
                     help='Temporary directory for test files')
 
 class CavTest(googletest.TestCase):
@@ -36,13 +36,14 @@ class CavTest(googletest.TestCase):
 
     The cav instance uses preset values.
     """
-    self.hparams = tf.contrib.training.HParams(model_type='linear', alpha=.01)
+    self.hparams = tf.contrib.training.HParams(
+      model_type='linear', alpha=.01, max_iter=1000, tol=1e-3)
     self.concepts = ['concept1', 'concept2']
     self.bottleneck = 'bottleneck'
     self.accuracies = {'concept1': 0.8, 'concept2': 0.5, 'overall': 0.65}
     self.cav_vecs = [[1, 2, 3], [4, 5, 6]]
 
-    self.test_subdirectory = os.path.join(FLAGS.test_tmpdir, 'test')
+    self.test_subdirectory = os.path.join(FLAGS.tcav_test_tmpdir, 'test')
     self.cav_dir = self.test_subdirectory
     self.cav_file_name = CAV.cav_key(self.concepts, self.bottleneck,
                                          self.hparams.model_type,
@@ -61,7 +62,7 @@ class CavTest(googletest.TestCase):
     if os.path.exists(self.cav_dir):
       shutil.rmtree(self.cav_dir)
     os.mkdir(self.cav_dir)
-    with tf.gfile.Open(self.save_path, 'w') as pkl_file:
+    with tf.io.gfile.GFile(self.save_path, 'w') as pkl_file:
       pickle.dump({
           'concepts': self.concepts,
           'bottleneck': self.bottleneck,

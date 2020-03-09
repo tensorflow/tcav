@@ -15,7 +15,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from tensorflow.python.platform import googletest
-from tcav_results.results_pb2 import Result, Results
+from tcav.tcav_results.results_pb2 import Result, Results
 from tcav.utils import flatten, process_what_to_run_expand, process_what_to_run_concepts, process_what_to_run_randoms, results_to_proto
 
 

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='tcav_results',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x1atcav_results/results.proto\x12\x0ctcav_results\"\xcc\x03\n\x06Result\x12\x0f\n\x07\x63\x61v_key\x18\x01 \x01(\t\x12\x13\n\x0b\x63\x61v_concept\x18\x02 \x01(\t\x12\x18\n\x10negative_concept\x18\x03 \x01(\t\x12\x14\n\x0ctarget_class\x18\x04 \x01(\t\x12:\n\x0e\x63\x61v_accuracies\x18\x05 \x01(\x0b\x32\".tcav_results.Result.CAVaccuracies\x12\x0c\n\x04i_up\x18\x06 \x01(\x02\x12%\n\x1dval_directional_dirs_abs_mean\x18\x07 \x01(\x02\x12!\n\x19val_directional_dirs_mean\x18\x08 \x01(\x02\x12 \n\x18val_directional_dirs_std\x18\t \x01(\x02\x12\x1c\n\x14val_directional_dirs\x18\n \x03(\x02\x12\x0c\n\x04note\x18\x0b \x01(\t\x12\r\n\x05\x61lpha\x18\x0c \x01(\x02\x12\x12\n\nbottleneck\x18\r \x01(\t\x1ag\n\rCAVaccuracies\x12\x1d\n\x15positive_set_accuracy\x18\x01 \x01(\x02\x12\x1d\n\x15negative_set_accuracy\x18\x02 \x01(\x02\x12\x18\n\x10overall_accuracy\x18\x03 \x01(\x02\"0\n\x07Results\x12%\n\x07results\x18\x01 \x03(\x0b\x32\x14.tcav_results.Result')
+  serialized_pb=_b('\n\x1atcav_results/results.proto\x12\x0ctcav_results\"\xcc\x03\n\x06Result\x12\x0f\n\x07\x63\x61v_key\x18\x01 \x01(\t\x12\x13\n\x0b\x63\x61v_concept\x18\x02 \x01(\t\x12\x18\n\x10negative_concept\x18\x03 \x01(\t\x12\x14\n\x0ctarget_class\x18\x04 \x01(\x05\x12:\n\x0e\x63\x61v_accuracies\x18\x05 \x01(\x0b\x32\".tcav_results.Result.CAVaccuracies\x12\x0c\n\x04i_up\x18\x06 \x01(\x02\x12%\n\x1dval_directional_dirs_abs_mean\x18\x07 \x01(\x02\x12!\n\x19val_directional_dirs_mean\x18\x08 \x01(\x02\x12 \n\x18val_directional_dirs_std\x18\t \x01(\x02\x12\x1c\n\x14val_directional_dirs\x18\n \x03(\x02\x12\x0c\n\x04note\x18\x0b \x01(\t\x12\r\n\x05\x61lpha\x18\x0c \x01(\x02\x12\x12\n\nbottleneck\x18\r \x01(\t\x1ag\n\rCAVaccuracies\x12\x1d\n\x15positive_set_accuracy\x18\x01 \x01(\x02\x12\x1d\n\x15negative_set_accuracy\x18\x02 \x01(\x02\x12\x18\n\x10overall_accuracy\x18\x03 \x01(\x02\"0\n\x07Results\x12%\n\x07results\x18\x01 \x03(\x0b\x32\x14.tcav_results.Result')
 )
 
 
@@ -100,8 +100,8 @@ _RESULT = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='target_class', full_name='tcav_results.Result.target_class', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
