@@ -179,6 +179,8 @@ class TCAV(object):
     self.random_counterpart = random_counterpart
     self.relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
 
+    if num_random_exp < 2:
+        tf.logging.error('the number of random concepts has to be at least 2')
     if random_concepts:
       num_random_exp = len(random_concepts)
 
@@ -210,13 +212,16 @@ class TCAV(object):
     now = time.time()
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
-      for i, res in enumerate(pool.imap(lambda p: self._run_single_set(p, overwrite=overwrite), self.params),1):
+      for i, res in enumerate(pool.imap(
+          lambda p: self._run_single_set(
+            p, overwrite=overwrite, run_parallel=run_parallel),
+          self.params), 1):
         tf.logging.info('Finished running param %s of %s' % (i, len(self.params)))
         results.append(res)
     else:
       for i, param in enumerate(self.params):
         tf.logging.info('Running param %s of %s' % (i, len(self.params)))
-        results.append(self._run_single_set(param, overwrite=overwrite))
+        results.append(self._run_single_set(param, overwrite=overwrite, run_parallel=run_parallel))
     tf.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
     if return_proto:
@@ -224,12 +229,13 @@ class TCAV(object):
     else:
       return results
 
-  def _run_single_set(self, param, overwrite=False):
+  def _run_single_set(self, param, overwrite=False, run_parallel=False):
     """Run TCAV with provided for one set of (target, concepts).
 
     Args:
       param: parameters to run
       overwrite: if True, overwrite any saved CAV files.
+      run_parallel: run this parallel.
 
     Returns:
       a dictionary of results (panda frame)
@@ -273,7 +279,8 @@ class TCAV(object):
     i_up = self.compute_tcav_score(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
         cav_instance, acts[target_class][cav_instance.bottleneck],
-        activation_generator.get_examples_for_concept(target_class))
+        activation_generator.get_examples_for_concept(target_class),
+        run_parallel=run_parallel)
     val_directional_dirs = self.get_directional_dir(
         mymodel, target_class_for_compute_tcav_score, cav_concept,
         cav_instance, acts[target_class][cav_instance.bottleneck],

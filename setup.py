@@ -34,5 +34,6 @@ setup(name='tcav',
           'matplotlib>=2.2.4',
           'Pillow>=6.0.0',
           'scikit-learn>=0.20.3',
-          'scipy>=1.2.1'
+          'scipy>=1.2.1',
+          'protobuf>=3.10.0',
       ])
