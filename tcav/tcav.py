@@ -179,6 +179,8 @@ class TCAV(object):
     self.random_counterpart = random_counterpart
     self.relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
 
+    if num_random_exp < 2:
+        tf.logging.error('the number of random concepts has to be at least 2')
     if random_concepts:
       num_random_exp = len(random_concepts)
 
