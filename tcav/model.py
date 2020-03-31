@@ -330,7 +330,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
     return myendpoints
 
 
-class GoolgeNetWrapper_public(PublicImageModelWrapper):
+class GoogleNetWrapper_public(PublicImageModelWrapper):
 
   def __init__(self, sess, model_saved_path, labels_path):
     image_shape_v1 = [224, 224, 3]
@@ -344,7 +344,7 @@ class GoolgeNetWrapper_public(PublicImageModelWrapper):
         logit_bias='softmax2_b:0',
     )
     self.sess = sess
-    super(GoolgeNetWrapper_public, self).__init__(sess,
+    super(GoogleNetWrapper_public, self).__init__(sess,
                                                   model_saved_path,
                                                   labels_path,
                                                   image_shape_v1,
