@@ -123,7 +123,7 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     """
     self.bottlenecks_tensors = {}
     self.ends = {}
-    for k, v in node_dict.iteritems():
+    for k, v in six.iteritems(node_dict):
       if self.import_prefix:
         v = 'import/' + v
       tensor = self.sess.graph.get_operation_by_name(v.strip(':0')).outputs[0]
