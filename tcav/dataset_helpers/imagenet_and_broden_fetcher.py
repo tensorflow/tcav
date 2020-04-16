@@ -1,3 +1,44 @@
+"""
+Copyright 2018 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
+"""
+Used to download images from the imagenet dataset and to move concepts from the Broden dataset, rearranging them
+in a format that is TCAV readable. Also enables creation of random folders from imagenet
+
+Usage for Imagenet
+  imagenet_dataframe = pandas.read_csv("imagenet_url_map.csv")
+  fetch_imagenet_class(path="your_path", class_name="zebra", number_of_images=100,
+                      imagenet_dataframe=imagenet_dataframe)
+                    
+Usage for broden:
+First, make sure you downloaded and unzipped the broden_224 dataset to a location of your interest. Then, run:
+  download_texture_to_working_folder(broden_path="path_were_you_saved_broden", 
+                                      saving_path="your_path",
+                                      texture_name="striped",
+                                       number_of_images=100)
+                                      
+Usage for making random folders:
+  imagenet_dataframe = pandas.read_csv("imagenet_url_map.csv")
+  generate_random_folders(working_directory="your_path",
+                            random_folder_prefix="random_500",
+                            number_of_random_folders=11,
+                            number_of_examples_per_folder=100,
+                            imagenet_dataframe=imagenet_dataframe)
+
+"""
 import pandas as pd
 import urllib.request
 import os
@@ -41,8 +82,6 @@ Filters away images that are corrupted or smaller than 10KB
   Raises:
     Exception: Propagated from PIL.image.verify()
 """
-
-
 def download_image(path, url):
   image_name = url.split("/")[-1]
   image_name = image_name.split("?")[0]
@@ -55,7 +94,7 @@ def download_image(path, url):
     Image.open(saving_path).verify()
 
     # Remove images smaller than 10kb, to make sure we are not downloading empty/low quality images
-    if os.stat(saving_path).st_size < kMinFileSize:
+    if tf.io.gfile.stat(saving_path).length < kMinFileSize:
       tf.io.gfile.remove(saving_path)
   # PIL.Image.verify() throws a default exception if it finds a corrupted image.
   except Exception as e:
@@ -80,8 +119,6 @@ def download_image(path, url):
     tf.errors.NotFoundError: Error occurred when we can't find the imagenet
     concept on the dataframe.
 """
-
-
 def fetch_all_urls_for_concept(imagenet_dataframe, concept):
   if imagenet_dataframe["class_name"].str.contains(concept).any():
     all_images = imagenet_dataframe[imagenet_dataframe["class_name"] ==
@@ -114,12 +151,7 @@ def fetch_all_urls_for_concept(imagenet_dataframe, concept):
 
 
 """
-
-
-def fetch_imagenet_class(path="../tcav_working/zebra_scrape/",
-                         class_name="zebra",
-                         number_of_images=1,
-                         imagenet_dataframe=None):
+def fetch_imagenet_class(path, class_name, number_of_images, imagenet_dataframe):
   if imagenet_dataframe is None:
     raise tf.errors.NotFoundError(
         None, None,
@@ -154,7 +186,7 @@ def fetch_imagenet_class(path="../tcav_working/zebra_scrape/",
   if num_downloaded < number_of_images:
     print("You requested " + str(number_of_images) +
           " but we were only able to find " +
-          str(number_of_images - num_downloaded) +
+          str(num_downloaded) +
           " good images from imageNet for concept " + class_name)
   else:
     print("Downloaded " + str(number_of_images) + " for " + class_name)
@@ -169,13 +201,11 @@ Assumes that you manually downloaded the broden dataset to broden_path.
   broden_path: String.Path where you donwloaded broden.
   saving_path: String.Where we'll save the images. Saves under
     path/texture_name.
-  texture_name: String representing DTD texture name i.e striped n_images;
-    Integer.Number of images to move
+  texture_name: String representing DTD texture name i.e striped
+  number_of_images: Integer.Number of images to move
 """
-
-
 def download_texture_to_working_folder(broden_path, saving_path, texture_name,
-                                       n_images):
+                                       number_of_images):
   # Create new experiment folder where we're moving the data to
   texture_saving_path = os.path.join(saving_path, texture_name)
   tf.io.gfile.makedirs(texture_saving_path)
@@ -185,6 +215,7 @@ def download_texture_to_working_folder(broden_path, saving_path, texture_name,
   tf.logging.info("Using path " + str(broden_textures_path) + " for texture: " +
                   str(texture_name))
   for root, dirs, files in os.walk(broden_textures_path):
+    # Broden contains _color suffixed images. Those shouldn't be used by tcav.
     texture_files = [
         a for a in files if (a.startswith(texture_name) and "color" not in a)
     ]
@@ -193,13 +224,13 @@ def download_texture_to_working_folder(broden_path, saving_path, texture_name,
                     " images for the concept " + texture_name)
 
     # Make sure we can fetch as many as the user requested.
-    if n_images > number_of_files_for_concept:
+    if number_of_images > number_of_files_for_concept:
       raise Exception("Concept " + texture_name + " only contains " +
                       str(number_of_files_for_concept) +
-                      " images. You requested " + str(n_images))
+                      " images. You requested " + str(number_of_images))
 
     # We are only moving data we are guaranteed to have, so no risk for infinite loop here.
-    save_number = n_images
+    save_number = number_of_images
     while save_number > 0:
       for file in texture_files:
         path_file = os.path.join(root, file)
@@ -237,8 +268,6 @@ images on them, like this:
     imagenet_dataframe: Pandas Dataframe containing the URLs for different
       imagenet classes.
 """
-
-
 def generate_random_folders(working_directory, random_folder_prefix,
                             number_of_random_folders,
                             number_of_examples_per_folder, imagenet_dataframe):
