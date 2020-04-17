@@ -378,3 +378,39 @@ class InceptionV3Wrapper_public(PublicImageModelWrapper):
                                                   endpoints_v3,
                                                   scope='v3')
     self.model_name = 'InceptionV3_public'
+
+class MobilenetV2Wrapper_public(PublicImageModelWrapper):
+    def __init__(self, sess, model_saved_path, labels_path):
+        self.image_value_range = (-1, 1)
+        image_shape_v2 = [224, 224, 3]
+        endpoints_v2 = dict(
+            input='input:0',
+            prediction='MobilenetV2/Predictions/Reshape:0',
+        )
+
+        self.sess = sess
+        super(MobilenetV2Wrapper_public, self).__init__(sess,
+                                                        model_saved_path,
+                                                        labels_path,
+                                                        image_shape_v2,
+                                                        endpoints_v2,
+                                                        scope='MobilenetV2')
+
+        # define bottleneck tensors and their gradients
+        self.bottlenecks_tensors = self.get_bottleneck_tensors_mobilenet(scope="MobilenetV2")
+        # Construct gradient ops.
+        g = tf.get_default_graph()
+        self._make_gradient_tensors()
+        self.model_name = 'MobilenetV2_public'
+
+
+    @staticmethod
+    def get_bottleneck_tensors_mobilenet(scope):
+        """Add Inception bottlenecks and their pre-Relu versions to endpoints dict."""
+        graph = tf.get_default_graph()
+        bn_endpoints = {}
+        for op in graph.get_operations():
+            if "add" in op.name and "gradients" not in op.name and "add" == op.name.split("/")[-1]:
+                name = op.name.split("/")[-2]
+                bn_endpoints[name] = op.outputs[0]
+        return bn_endpoints
