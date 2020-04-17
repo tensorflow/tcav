@@ -12,6 +12,10 @@
 #See the License for the specific language governing permissions and
 #limitations under the License.
 
+# Usage:
+# bash FetchDataAndModels.sh "path_where_to_download_models_and_data"
+#
+
 # Make datasets and models
 return_to="$(pwd)"
 echo "Working directory is"

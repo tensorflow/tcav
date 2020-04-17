@@ -389,8 +389,6 @@ class MobilenetV2Wrapper_public(PublicImageModelWrapper):
         )
 
         self.sess = sess
-        # self.import_prefix = "MobilenetV2"
-
         super(MobilenetV2Wrapper_public, self).__init__(sess,
                                                         model_saved_path,
                                                         labels_path,
