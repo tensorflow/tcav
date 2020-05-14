@@ -74,9 +74,9 @@ def make_concepts_targets_and_randoms(source_dir, number_of_images_per_folder, n
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Create data folders for the KDD99 model.')
+    parser = argparse.ArgumentParser(description='Create examples and concepts folders.')
     parser.add_argument('--source_dir', type=str,
-                        help='Name for the directory where we will save the data.')
+                        help='Name for the directory where we will create the data.')
     parser.add_argument('--number_of_images_per_folder', type=int,
                         help='Number of images to be included in each folder')
     parser.add_argument('--number_of_random_folders', type=int,
