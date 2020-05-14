@@ -1,8 +1,3 @@
-import subprocess
-import os
-import argparse
-from tensorflow.io import gfile
-import imagenet_and_broden_fetcher as fetcher
 """
 Copyright 2018 Google LLC
 
@@ -18,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 """ Downloads models and datasets for imagenet
 
     Content downloaded:
@@ -38,6 +32,11 @@ limitations under the License.
 
     python download_and_make_datasets.py --source_dir=YOUR_FOLDER --number_of_images_per_folder=50 --number_of_random_folders=10
 """
+import subprocess
+import os
+import argparse
+from tensorflow.io import gfile
+import imagenet_and_broden_fetcher as fetcher
 
 def make_concepts_targets_and_randoms(source_dir, number_of_images_per_folder, number_of_random_folders):
     # Run script to download data to source_dir
