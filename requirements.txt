@@ -5,3 +5,4 @@ scipy==1.2.1
 tensorflow==1.15.2
 numpy==1.16.0
 protobuf==3.10.0
+pandas==1.0.3
