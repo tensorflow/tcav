@@ -92,7 +92,7 @@ cd tcav/tcav_examples/discrete/
 You can also find a Jupyter notebook for a model trained on KDD99 in here:
 
 ```
-tcav/tcav_examples/discrete/kdd99/kdd99_discrete_example.ipynb.
+tcav/tcav_examples/discrete/kdd99_discrete_example.ipynb.
 ```
 
 ## Requirements

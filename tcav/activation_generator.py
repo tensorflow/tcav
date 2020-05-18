@@ -219,7 +219,7 @@ class DiscreteActivationGeneratorBase(ActivationGeneratorBase):
         model=model, acts_dir=acts_dir, max_examples=max_examples)
 
   def get_examples_for_concept(self, concept):
-    """Extracts examples for a concept and transforms them to the desired format:
+    """Extracts examples for a concept and transforms them to the desired format.
 
     Args:
       concept: Name of a concept. Names for the folder containing data for that
@@ -238,16 +238,14 @@ class DiscreteActivationGeneratorBase(ActivationGeneratorBase):
 
   @abstractmethod
   def load_data(self, concept):
-    """Extracts data from a source and returns it in a user specified format
+    """Extracts data from a source and returns it in a user specified format.
 
     It takes in as input the name for a concept folder that lies inside of the
     source_dir.
 
-
     Args
       concept: name of the concept (e.g., name of a folder that contains concept
-      examples in source_dir). They
-      should be located in source_dir.
+      examples in source_dir). They should be located in source_dir.
     Returns:
       data parsed
     """
@@ -255,14 +253,13 @@ class DiscreteActivationGeneratorBase(ActivationGeneratorBase):
     raise NotImplementedError()
 
   def transform_data(self, data):
-    """Transforms data into a format that can be directly processed by the model
+    """Transforms data into a format that can be directly processed by the model.
 
     Once the data is parsed, use this function to transform the data into the
     format your model needs. Some example transformations can be:
       - Converting to proto type
       - Encoding categorical features
       - Tokenizing an input sequence
-
 
     Args:
       data: The previously extracted data from load_data

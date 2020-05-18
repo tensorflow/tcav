@@ -59,8 +59,8 @@ def make_keras_model(categorical_map):
       inpt = deconcat[index]
       inputs.append(inpt)
       embed = tf.keras.layers.Embedding(vocab_size, 200, \
-                                        trainable=True, embeddings_initializer=tf.initializers.random_normal())(
-          inpt)
+                                        trainable=True,
+                                        embeddings_initializer=tf.initializers.random_normal())(inpt)
 
       embed_reshaped = tf.keras.layers.Reshape(target_shape=(200,))(embed)
       models.append(embed_reshaped)
