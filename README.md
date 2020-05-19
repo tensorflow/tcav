@@ -103,7 +103,6 @@ tcav/tcav_examples/discrete/kdd99_discrete_example.ipynb.
 -   matplotlib
 -   scikit-learn
 -   scipy
--   pandas
 
 ## How to run unit tests
 
