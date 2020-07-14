@@ -86,20 +86,20 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
         if tf.io.gfile.isdir(model_path):
           ckpt = tf.train.latest_checkpoint(model_path)
           if ckpt:
-            tf.logging.info('Loading from the latest checkpoint.')
+            tf.compat.v1.logging.info('Loading from the latest checkpoint.')
             saver = tf.train.import_meta_graph(ckpt + '.meta')
             saver.restore(self.sess, ckpt)
           else:
-            tf.logging.info('Loading from SavedModel dir.')
+            tf.compat.v1.logging.info('Loading from SavedModel dir.')
             tf.saved_model.loader.load(self.sess, ['serve'], model_path)
         else:
-          input_graph_def = tf.GraphDef()
+          input_graph_def = tf.compat.v1.GraphDef()
           if model_path.endswith('.pb'):
-            tf.logging.info('Loading from frozen binary graph.')
+            tf.compat.v1.logging.info('Loading from frozen binary graph.')
             with tf.io.gfile.GFile(model_path, 'rb') as f:
               input_graph_def.ParseFromString(f.read())
           else:
-            tf.logging.info('Loading from frozen text graph.')
+            tf.compat.v1.logging.info('Loading from frozen text graph.')
             with tf.io.gfile.GFile(model_path) as f:
               text_format.Parse(f.read(), input_graph_def)
           tf.import_graph_def(input_graph_def)
@@ -109,7 +109,7 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
       template = 'An exception of type {0} occurred ' \
                  'when trying to load model from {1}. ' \
                  'Arguments:\n{2!r}'
-      tf.logging.warn(template.format(type(e).__name__, model_path, e.args))
+      tf.compat.v1.logging.warn(template.format(type(e).__name__, model_path, e.args))
 
   def _find_ends_and_bottleneck_tensors(self, node_dict):
     """ Find tensors from the graph by their names.
@@ -199,7 +199,7 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     Override this method if label to id mapping is known. Otherwise,
     default id 0 is used.
     """
-    tf.logging.warn('label_to_id undefined. Defaults to returning 0.')
+    tf.compat.v1.logging.warn('label_to_id undefined. Defaults to returning 0.')
     return 0
 
 
@@ -248,15 +248,15 @@ class PublicImageModelWrapper(ImageModelWrapper):
         model_fn_path, endpoints_dict, self.image_value_range, scope=scope)
     self.bottlenecks_tensors = PublicImageModelWrapper.get_bottleneck_tensors(
         scope)
-    graph = tf.get_default_graph()
+    graph = tf.compat.v1.get_default_graph()
 
     # Construct gradient ops.
     with graph.as_default():
-      self.y_input = tf.placeholder(tf.int64, shape=[None])
+      self.y_input = tf.compat.v1.placeholder(tf.int64, shape=[None])
 
       self.pred = tf.expand_dims(self.ends['prediction'][0], 0)
       self.loss = tf.reduce_mean(
-          tf.nn.softmax_cross_entropy_with_logits(
+          tf.compat.v1.nn.softmax_cross_entropy_with_logits_v2(
               labels=tf.one_hot(
                   self.y_input,
                   self.ends['prediction'].get_shape().as_list()[1]),
@@ -290,7 +290,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
   @staticmethod
   def get_bottleneck_tensors(scope):
     """Add Inception bottlenecks and their pre-Relu versions to endpoints dict."""
-    graph = tf.get_default_graph()
+    graph = tf.compat.v1.get_default_graph()
     bn_endpoints = {}
     for op in graph.get_operations():
       if op.name.startswith(scope + '/') and 'Concat' in op.type:
@@ -301,13 +301,13 @@ class PublicImageModelWrapper(ImageModelWrapper):
   # Load graph and import into graph used by our session
   @staticmethod
   def import_graph(saved_path, endpoints, image_value_range, scope='import'):
-    t_input = tf.placeholder(np.float32, [None, None, None, 3])
+    t_input = tf.compat.v1.placeholder(np.float32, [None, None, None, 3])
     graph = tf.Graph()
     assert graph.unique_name(scope, False) == scope, (
         'Scope "%s" already exists. Provide explicit scope names when '
         'importing multiple instances of the model.') % scope
 
-    graph_def = tf.GraphDef.FromString(
+    graph_def = tf.compat.v1.GraphDef.FromString(
         tf.io.gfile.GFile(saved_path, 'rb').read())
 
     with tf.name_scope(scope) as sc:
@@ -398,14 +398,14 @@ class MobilenetV2Wrapper_public(PublicImageModelWrapper):
     self.bottlenecks_tensors = self.get_bottleneck_tensors_mobilenet(
         scope='MobilenetV2')
     # Construct gradient ops.
-    g = tf.get_default_graph()
+    g = tf.compat.v1.get_default_graph()
     self._make_gradient_tensors()
     self.model_name = 'MobilenetV2_public'
 
   @staticmethod
   def get_bottleneck_tensors_mobilenet(scope):
     """Add Inception bottlenecks and their pre-Relu versions to endpoints dict."""
-    graph = tf.get_default_graph()
+    graph = tf.compat.v1.get_default_graph()
     bn_endpoints = {}
     for op in graph.get_operations():
       if 'add' in op.name and 'gradients' not in op.name and 'add' == op.name.split(
@@ -445,7 +445,7 @@ class KerasModelWrapper(ModelWrapper):
     self.labels = tf.io.gfile.GFile(labels_path).read().splitlines()
 
     # Construct gradient ops. Defaults to using the model's output layer
-    self.y_input = tf.placeholder(tf.int64, shape=[None])
+    self.y_input = tf.compat.v1.placeholder(tf.int64, shape=[None])
     self.loss = self.model.loss_functions[0](self.y_input,
                                              self.model.outputs[0])
     self._make_gradient_tensors()

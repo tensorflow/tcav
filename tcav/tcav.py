@@ -180,7 +180,7 @@ class TCAV(object):
     self.relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
 
     if num_random_exp < 2:
-        tf.logging.error('the number of random concepts has to be at least 2')
+        tf.compat.v1.logging.error('the number of random concepts has to be at least 2')
     if random_concepts:
       num_random_exp = len(random_concepts)
 
@@ -189,7 +189,7 @@ class TCAV(object):
                                      random_concepts=random_concepts)
     # parameters
     self.params = self.get_params()
-    tf.logging.info('TCAV will %s params' % len(self.params))
+    tf.compat.v1.logging.info('TCAV will %s params' % len(self.params))
 
   def run(self, num_workers=10, run_parallel=False, overwrite=False, return_proto=False):
     """Run TCAV for all parameters (concept and random), write results to html.
@@ -207,7 +207,7 @@ class TCAV(object):
     """
     # for random exp,  a machine with cpu = 30, ram = 300G, disk = 10G and
     # pool worker 50 seems to work.
-    tf.logging.info('running %s params' % len(self.params))
+    tf.compat.v1.logging.info('running %s params' % len(self.params))
     results = []
     now = time.time()
     if run_parallel:
@@ -216,13 +216,13 @@ class TCAV(object):
           lambda p: self._run_single_set(
             p, overwrite=overwrite, run_parallel=run_parallel),
           self.params), 1):
-        tf.logging.info('Finished running param %s of %s' % (i, len(self.params)))
+        tf.compat.v1.logging.info('Finished running param %s of %s' % (i, len(self.params)))
         results.append(res)
     else:
       for i, param in enumerate(self.params):
-        tf.logging.info('Running param %s of %s' % (i, len(self.params)))
+        tf.compat.v1.logging.info('Running param %s of %s' % (i, len(self.params)))
         results.append(self._run_single_set(param, overwrite=overwrite, run_parallel=run_parallel))
-    tf.logging.info('Done running %s params. Took %s seconds...' % (len(
+    tf.compat.v1.logging.info('Done running %s params. Took %s seconds...' % (len(
         self.params), time.time() - now))
     if return_proto:
       return utils.results_to_proto(results)
@@ -249,7 +249,7 @@ class TCAV(object):
     cav_dir = param.cav_dir
     # first check if target class is in model.
 
-    tf.logging.info('running %s %s' % (target_class, concepts))
+    tf.compat.v1.logging.info('running %s %s' % (target_class, concepts))
 
     # Get acts
     acts = activation_generator.process_and_load_activations(
@@ -391,7 +391,7 @@ class TCAV(object):
     for bottleneck in self.bottlenecks:
       for target_in_test, concepts_in_test in self.pairs_to_test:
         for alpha in self.alphas:
-          tf.logging.info('%s %s %s %s', bottleneck, concepts_in_test,
+          tf.compat.v1.logging.info('%s %s %s %s', bottleneck, concepts_in_test,
                           target_in_test, alpha)
           params.append(
               run_params.RunParams(bottleneck, concepts_in_test, target_in_test,
