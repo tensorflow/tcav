@@ -76,13 +76,13 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
           with tf.io.gfile.GFile(acts_path, 'rb') as f:
             acts[concept][bottleneck_name] = np.load(
                 f, allow_pickle=True).squeeze()
-            tf.logging.info('Loaded {} shape {}'.format(
+            tf.compat.v1.logging.info('Loaded {} shape {}'.format(
                 acts_path, acts[concept][bottleneck_name].shape))
         else:
           acts[concept][bottleneck_name] = self.get_activations_for_concept(
               concept, bottleneck_name)
           if acts_path:
-            tf.logging.info(
+            tf.compat.v1.logging.info(
                 '{} does not exist, Making one...'.format(acts_path))
             tf.io.gfile.mkdir(os.path.dirname(acts_path))
             with tf.io.gfile.GFile(acts_path, 'w') as f:
@@ -135,7 +135,7 @@ class ImageActivationGenerator(ActivationGeneratorBase):
       exception if the image was not the right shape.
     """
     if not tf.io.gfile.exists(filename):
-      tf.logging.error('Cannot find file: {}'.format(filename))
+      tf.compat.v1.logging.error('Cannot find file: {}'.format(filename))
       return None
     try:
       # ensure image has no transparency channel
@@ -153,7 +153,7 @@ class ImageActivationGenerator(ActivationGeneratorBase):
         return img
 
     except Exception as e:
-      tf.logging.info(e)
+      tf.compat.v1.logging.info(e)
       return None
     return img
 

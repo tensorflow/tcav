@@ -161,7 +161,7 @@ class CAV(object):
       ValueError: if the model_type in hparam is not compatible.
     """
 
-    tf.logging.info('training with alpha={}'.format(self.hparams.alpha))
+    tf.compat.v1.logging.info('training with alpha={}'.format(self.hparams.alpha))
     x, labels, labels2text = CAV._create_cav_training_set(
         self.concepts, self.bottleneck, acts)
 
@@ -229,7 +229,7 @@ class CAV(object):
       with tf.io.gfile.GFile(self.save_path, 'w') as pkl_file:
         pickle.dump(save_dict, pkl_file)
     else:
-      tf.logging.info('save_path is None. Not saving anything')
+      tf.compat.v1.logging.info('save_path is None. Not saving anything')
 
   def _train_lm(self, lm, x, y, labels2text):
     """Train a model to get CAVs.
@@ -267,7 +267,7 @@ class CAV(object):
       # overall correctness is weighted by the number of examples in this class.
       num_correct += (sum(idx) * acc[labels2text[class_id]])
     acc['overall'] = float(num_correct) / float(len(y_test))
-    tf.logging.info('acc per class %s' % (str(acc)))
+    tf.compat.v1.logging.info('acc per class %s' % (str(acc)))
     return acc
 
 
@@ -308,14 +308,14 @@ def get_or_train_cav(concepts,
                     cav_hparams.alpha).replace('/', '.') + '.pkl')
 
     if not overwrite and tf.io.gfile.exists(cav_path):
-      tf.logging.info('CAV already exists: {}'.format(cav_path))
+      tf.compat.v1.logging.info('CAV already exists: {}'.format(cav_path))
       cav_instance = CAV.load_cav(cav_path)
-      tf.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
+      tf.compat.v1.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
       return cav_instance
 
-  tf.logging.info('Training CAV {} - {} alpha {}'.format(
+  tf.compat.v1.logging.info('Training CAV {} - {} alpha {}'.format(
       concepts, bottleneck, cav_hparams.alpha))
   cav_instance = CAV(concepts, bottleneck, cav_hparams, cav_path)
   cav_instance.train({c: acts[c] for c in concepts})
-  tf.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
+  tf.compat.v1.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
   return cav_instance
