@@ -160,10 +160,10 @@ def fetch_imagenet_class(path, class_name, number_of_images, imagenet_dataframe)
   # To speed up imagenet download, we timeout image downloads at 5 seconds.
   socket.setdefaulttimeout(5)
 
-  tf.logging.info("Fetching imagenet data for " + class_name)
+  tf.compat.v1.logging.info("Fetching imagenet data for " + class_name)
   concept_path = os.path.join(path, class_name)
   tf.io.gfile.makedirs(concept_path)
-  tf.logging.info("Saving images at " + concept_path)
+  tf.compat.v1.logging.info("Saving images at " + concept_path)
 
   # Check to see if this class name exists. Fetch all urls if so.
   all_images = fetch_all_urls_for_concept(imagenet_dataframe, class_name)
@@ -177,7 +177,7 @@ def fetch_imagenet_class(path, class_name, number_of_images, imagenet_dataframe)
         num_downloaded += 1
 
       except Exception as e:
-        tf.logging.info("Problem downloading imagenet image. Exception was " +
+        tf.compat.v1.logging.info("Problem downloading imagenet image. Exception was " +
                         str(e) + " for URL " + image_url)
     if num_downloaded >= number_of_images:
       break
@@ -212,7 +212,7 @@ def download_texture_to_working_folder(broden_path, saving_path, texture_name,
 
   # Get images from broden
   broden_textures_path = os.path.join(broden_path, kBrodenTexturesPath)
-  tf.logging.info("Using path " + str(broden_textures_path) + " for texture: " +
+  tf.compat.v1.logging.info("Using path " + str(broden_textures_path) + " for texture: " +
                   str(texture_name))
   for root, dirs, files in os.walk(broden_textures_path):
     # Broden contains _color suffixed images. Those shouldn't be used by tcav.
@@ -220,7 +220,7 @@ def download_texture_to_working_folder(broden_path, saving_path, texture_name,
         a for a in files if (a.startswith(texture_name) and "color" not in a)
     ]
     number_of_files_for_concept = len(texture_files)
-    tf.logging.info("We have " + str(len(texture_files)) +
+    tf.compat.v1.logging.info("We have " + str(len(texture_files)) +
                     " images for the concept " + texture_name)
 
     # Make sure we can fetch as many as the user requested.
@@ -289,10 +289,9 @@ def generate_random_folders(working_directory, random_folder_prefix,
             download_image(partition_folder_path, url)
             examples_selected += 1
             if (examples_selected) % 10 == 0:
-              tf.logging.info("Downloaded " + str(examples_selected) + "/" +
+              tf.compat.v1.logging.info("Downloaded " + str(examples_selected) + "/" +
                               str(number_of_examples_per_folder) + " for " +
                               partition_name)
             break  # Break if we successfully downloaded an image
           except:
               pass # try new url
-          

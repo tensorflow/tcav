@@ -32,7 +32,7 @@ class ModelTest(googletest.TestCase):
 
   def setUp(self):
     # Create an execution graph
-    x = tf.placeholder(dtype=tf.float64, shape=[], name='input')
+    x = tf.compat.v1.placeholder(dtype=tf.float64, shape=[], name='input')
     a = tf.Variable(111, name='var1', dtype=tf.float64)
     y = tf.math.multiply(x, a, name='output')
 
@@ -41,19 +41,19 @@ class ModelTest(googletest.TestCase):
     self.frozen_graph_dir = '/tmp/frozen_graph/'
     self.tmp_dirs = [self.ckpt_dir, self.saved_model_dir, self.frozen_graph_dir]
     for d in self.tmp_dirs:
-      if tf.gfile.Exists(d):
-        tf.gfile.DeleteRecursively(d)
-        tf.gfile.MakeDirs(d)
+      if tf.io.gfile.exists(d):
+        tf.io.gfile.rmtree(d)
+        tf.io.gfile.makedirs(d)
 
-    with tf.Session() as sess:
-      tf.initialize_all_variables().run()
+    with tf.compat.v1.Session() as sess:
+      tf.compat.v1.initialize_all_variables().run()
 
       # Save as checkpoint
-      saver = tf.train.Saver()
+      saver = tf.compat.v1.train.Saver()
       saver.save(sess, self.ckpt_dir + 'model.ckpt', write_meta_graph=True)
 
       # Save as SavedModel
-      tf.saved_model.simple_save(
+      tf.compat.v1.saved_model.simple_save(
           sess,
           self.saved_model_dir,
           inputs={'input': x},
@@ -75,7 +75,7 @@ class ModelTest(googletest.TestCase):
 
   def tearDown(self):
     for d in self.tmp_dirs:
-      tf.gfile.DeleteRecursively(d)
+      tf.io.gfile.rmtree(d)
 
   def _check_output_and_gradient(self, model_path, import_prefix=False):
     model = ModelTest_model(model_path=model_path, node_dict={'v1': 'var1'})

@@ -43,7 +43,7 @@ class KDD99KerasModelWrapper(KerasModelWrapper):
     super(KDD99KerasModelWrapper, self).__init__(sess, model_path, labels_path)
 
     # Using SparseCategoricalCrossEntropy here
-    self.y_input = tf.placeholder(tf.int64, shape=[None])
+    self.y_input = tf.compat.v1.placeholder(tf.int64, shape=[None])
     self.loss = self.model.loss_functions[0](self.y_input,
                                              self.model.outputs[0])
     self._make_gradient_tensors()
