@@ -45,7 +45,7 @@ class CAV(object):
     Returns:
       TF.HParams for training.
     """
-    return tf.contrib.training.HParams(model_type='linear', alpha=.01, max_iter=1000, tol=1e-3)
+    return {'model_type':'linear', 'alpha':.01, 'max_iter':1000, 'tol':1e-3}
 
   @staticmethod
   def load_cav(cav_path):
@@ -97,8 +97,8 @@ class CAV(object):
     """
     cav_path = os.path.join(
         cav_dir,
-        CAV.cav_key(concepts, bottleneck, cav_hparams.model_type,
-                    cav_hparams.alpha) + '.pkl')
+        CAV.cav_key(concepts, bottleneck, cav_hparams['model_type'],
+                    cav_hparams['alpha']) + '.pkl')
     return tf.io.gfile.exists(cav_path)
 
   @staticmethod
@@ -161,17 +161,17 @@ class CAV(object):
       ValueError: if the model_type in hparam is not compatible.
     """
 
-    tf.compat.v1.logging.info('training with alpha={}'.format(self.hparams.alpha))
+    tf.compat.v1.logging.info('training with alpha={}'.format(self.hparams['alpha']))
     x, labels, labels2text = CAV._create_cav_training_set(
         self.concepts, self.bottleneck, acts)
 
-    if self.hparams.model_type == 'linear':
-      lm = linear_model.SGDClassifier(alpha=self.hparams.alpha, max_iter=self.hparams.max_iter, tol=self.hparams.tol)
-    elif self.hparams.model_type == 'logistic':
+    if self.hparams['model_type'] == 'linear':
+      lm = linear_model.SGDClassifier(alpha=self.hparams['alpha'], max_iter=self.hparams['max_iter'], tol=self.hparams['tol'])
+    elif self.hparams['model_type'] == 'logistic':
       lm = linear_model.LogisticRegression()
     else:
       raise ValueError('Invalid hparams.model_type: {}'.format(
-          self.hparams.model_type))
+          self.hparams['model_type']))
 
     self.accuracies = self._train_lm(lm, x, labels, labels2text)
     if len(lm.coef_) == 1:
@@ -201,8 +201,8 @@ class CAV(object):
   def get_key(self):
     """Returns cav_key."""
 
-    return CAV.cav_key(self.concepts, self.bottleneck, self.hparams.model_type,
-                       self.hparams.alpha)
+    return CAV.cav_key(self.concepts, self.bottleneck, self.hparams['model_type'],
+                       self.hparams['alpha'])
 
   def get_direction(self, concept):
     """Get CAV direction.
@@ -304,8 +304,8 @@ def get_or_train_cav(concepts,
     utils.make_dir_if_not_exists(cav_dir)
     cav_path = os.path.join(
         cav_dir,
-        CAV.cav_key(concepts, bottleneck, cav_hparams.model_type,
-                    cav_hparams.alpha).replace('/', '.') + '.pkl')
+        CAV.cav_key(concepts, bottleneck, cav_hparams['model_type'],
+                    cav_hparams['alpha']).replace('/', '.') + '.pkl')
 
     if not overwrite and tf.io.gfile.exists(cav_path):
       tf.compat.v1.logging.info('CAV already exists: {}'.format(cav_path))
@@ -314,7 +314,7 @@ def get_or_train_cav(concepts,
       return cav_instance
 
   tf.compat.v1.logging.info('Training CAV {} - {} alpha {}'.format(
-      concepts, bottleneck, cav_hparams.alpha))
+      concepts, bottleneck, cav_hparams['alpha']))
   cav_instance = CAV(concepts, bottleneck, cav_hparams, cav_path)
   cav_instance.train({c: acts[c] for c in concepts})
   tf.compat.v1.logging.info('CAV accuracies: {}'.format(cav_instance.accuracies))
