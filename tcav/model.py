@@ -108,7 +108,7 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     except Exception as e:
       template = 'An exception of type {0} occurred ' \
                  'when trying to load model from {1}. ' \
-                 'Arguments:\n{2!r}'
+                 'Args:\n{2!r}'
       tf.compat.v1.logging.warn(template.format(type(e).__name__, model_path, e.args))
 
   def _find_ends_and_bottleneck_tensors(self, node_dict):
