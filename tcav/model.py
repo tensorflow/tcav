@@ -81,17 +81,17 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     ommitted, child wrapper is responsible for loading the model.
     """
     try:
-      self.sess = tf.Session(graph=tf.Graph())
+      self.sess = tf.compat.v1.Session(graph=tf.Graph())
       with self.sess.graph.as_default():
         if tf.io.gfile.isdir(model_path):
           ckpt = tf.train.latest_checkpoint(model_path)
           if ckpt:
             tf.compat.v1.logging.info('Loading from the latest checkpoint.')
-            saver = tf.train.import_meta_graph(ckpt + '.meta')
+            saver = tf.compat.v1.train.import_meta_graph(ckpt + '.meta')
             saver.restore(self.sess, ckpt)
           else:
             tf.compat.v1.logging.info('Loading from SavedModel dir.')
-            tf.saved_model.loader.load(self.sess, ['serve'], model_path)
+            tf.compat.v1.saved_model.loader.load(self.sess, ['serve'], model_path)
         else:
           input_graph_def = tf.compat.v1.GraphDef()
           if model_path.endswith('.pb'):
@@ -137,7 +137,7 @@ class ModelWrapper(six.with_metaclass(ABCMeta, object)):
     self.bottlenecks_gradients = {}
     for bn in self.bottlenecks_tensors:
       self.bottlenecks_gradients[bn] = tf.gradients(
-          self.loss, self.bottlenecks_tensors[bn])[0]
+          ys=self.loss, xs=self.bottlenecks_tensors[bn])[0]
 
   def get_gradient(self, acts, y, bottleneck_name, example):
     """Return the gradient of the loss with respect to the bottleneck_name.
@@ -256,7 +256,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
 
       self.pred = tf.expand_dims(self.ends['prediction'][0], 0)
       self.loss = tf.reduce_mean(
-          tf.compat.v1.nn.softmax_cross_entropy_with_logits_v2(
+          input_tensor=tf.compat.v1.nn.softmax_cross_entropy_with_logits_v2(
               labels=tf.one_hot(
                   self.y_input,
                   self.ends['prediction'].get_shape().as_list()[1]),
@@ -310,7 +310,7 @@ class PublicImageModelWrapper(ImageModelWrapper):
     graph_def = tf.compat.v1.GraphDef.FromString(
         tf.io.gfile.GFile(saved_path, 'rb').read())
 
-    with tf.name_scope(scope) as sc:
+    with tf.compat.v1.name_scope(scope) as sc:
       t_input, t_prep_input = PublicImageModelWrapper.create_input(
           t_input, image_value_range)
 

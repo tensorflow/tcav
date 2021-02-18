@@ -256,7 +256,7 @@ class TCAV(object):
         [bottleneck], concepts + [target_class])
     # Get CAVs
     cav_hparams = CAV.default_hparams()
-    cav_hparams.alpha = alpha
+    cav_hparams['alpha'] = alpha
     cav_instance = get_or_train_cav(
         concepts,
         bottleneck,
@@ -270,8 +270,8 @@ class TCAV(object):
       del acts[c]
 
     # Hypo testing
-    a_cav_key = CAV.cav_key(concepts, bottleneck, cav_hparams.model_type,
-                            cav_hparams.alpha)
+    a_cav_key = CAV.cav_key(concepts, bottleneck, cav_hparams['model_type'],
+                            cav_hparams['alpha'])
     target_class_for_compute_tcav_score = target_class
 
     cav_concept = concepts[0]

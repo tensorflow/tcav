@@ -36,8 +36,8 @@ class CavTest(googletest.TestCase):
 
     The cav instance uses preset values.
     """
-    self.hparams = tf.contrib.training.HParams(
-      model_type='linear', alpha=.01, max_iter=1000, tol=1e-3)
+    self.hparams = {
+      'model_type':'linear', 'alpha':.01, 'max_iter':1000, 'tol':1e-3}
     self.concepts = ['concept1', 'concept2']
     self.bottleneck = 'bottleneck'
     self.accuracies = {'concept1': 0.8, 'concept2': 0.5, 'overall': 0.65}
@@ -46,8 +46,8 @@ class CavTest(googletest.TestCase):
     self.test_subdirectory = os.path.join(FLAGS.tcav_test_tmpdir, 'test')
     self.cav_dir = self.test_subdirectory
     self.cav_file_name = CAV.cav_key(self.concepts, self.bottleneck,
-                                         self.hparams.model_type,
-                                         self.hparams.alpha) + '.pkl'
+                                         self.hparams['model_type'],
+                                         self.hparams['alpha']) + '.pkl'
     self.save_path = os.path.join(self.cav_dir, self.cav_file_name)
     self.cav = CAV(self.concepts, self.bottleneck, self.hparams)
     # pretend that it was trained and cavs are stored
@@ -74,8 +74,8 @@ class CavTest(googletest.TestCase):
 
   def test_default_hparams(self):
     hparam = CAV.default_hparams()
-    self.assertEqual(hparam.alpha, 0.01)
-    self.assertEqual(hparam.model_type, 'linear')
+    self.assertEqual(hparam['alpha'], 0.01)
+    self.assertEqual(hparam['model_type'], 'linear')
 
   def test_load_cav(self):
     """Load up the cav file written in setup function and check values.
@@ -87,9 +87,9 @@ class CavTest(googletest.TestCase):
   def test_cav_key(self):
     self.assertEqual(
         self.cav.cav_key(self.concepts, self.bottleneck,
-                         self.hparams.model_type, self.hparams.alpha),
+                         self.hparams['model_type'], self.hparams['alpha']),
         '-'.join(self.concepts) + '-' + self.bottleneck + '-' +
-        self.hparams.model_type + '-' + str(self.hparams.alpha))
+        self.hparams['model_type'] + '-' + str(self.hparams['alpha']))
 
   def test_check_cav_exists(self):
     exists = self.cav.check_cav_exists(self.cav_dir, self.concepts,
@@ -115,10 +115,10 @@ class CavTest(googletest.TestCase):
 
   def test_get_key(self):
     self.assertEqual(
-        CAV.cav_key(self.concepts, self.bottleneck, self.hparams.model_type,
-                        self.hparams.alpha),
+        CAV.cav_key(self.concepts, self.bottleneck, self.hparams['model_type'],
+                        self.hparams['alpha']),
         '-'.join([str(c) for c in self.concepts]) + '-' + self.bottleneck + '-'
-        + self.hparams.model_type + '-' + str(self.hparams.alpha))
+        + self.hparams['model_type'] + '-' + str(self.hparams['alpha']))
 
   def test_get_direction(self):
     idx_concept1 = self.cav.concepts.index('concept1')
@@ -134,7 +134,7 @@ class CavTest(googletest.TestCase):
     self.assertLess(self.cav.cavs[0][0] * self.cav.cavs[1][0], 0)
 
   def test__train_lm(self):
-    lm = linear_model.SGDClassifier(alpha=self.hparams.alpha)
+    lm = linear_model.SGDClassifier(alpha=self.hparams['alpha'])
     acc = self.cav._train_lm(lm, np.array([[0], [0], [0], [1], [1], [1]]),
                              np.array([0, 0, 0, 1, 1, 1]), {
                                  0: 0,

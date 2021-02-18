@@ -63,7 +63,7 @@ class TcavTest(googletest.TestCase):
     self.class_id = 0
     self.bottleneck = 'bn'
     self.cav_dir = None
-    self.hparams = tf.contrib.training.HParams(model_type='linear', alpha=.01)
+    self.hparams = {'model_type':'linear', 'alpha':.01}
     self.cav = CAV(self.concepts,
                        self.bottleneck,
                        self.hparams)
@@ -78,14 +78,14 @@ class TcavTest(googletest.TestCase):
                        self.concepts,
                        [self.bottleneck],
                        self.act_gen,
-                       [self.hparams.alpha])
+                       [self.hparams['alpha']])
 
     self.mytcav_random_counterpart = TCAV(None,
                                           self.target,
                                           self.concepts,
                                           [self.bottleneck],
                                           self.act_gen,
-                                          [self.hparams.alpha],
+                                          [self.hparams['alpha']],
                                           self.random_counterpart)
 
   def test_get_direction_dir_sign(self):

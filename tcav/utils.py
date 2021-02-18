@@ -43,7 +43,7 @@ def create_session(timeout=10000, interactive=True):
   if interactive:
     return tf.compat.v1.InteractiveSession(graph=graph, config=config)
   else:
-    return tf.Session(graph=graph, config=config)
+    return tf.compat.v1.Session(graph=graph, config=config)
 
 
 def flatten(nested_list):
@@ -97,7 +97,7 @@ def process_what_to_run_expand(pairs_to_test,
     elif len(concept_set) > 1:
       new_pairs_to_test_t.append((target, concept_set))
     else:
-      tf.logging.info('PAIR NOT PROCCESSED')
+      tf.compat.v1.logging.info('PAIR NOT PROCCESSED')
     new_pairs_to_test.extend(new_pairs_to_test_t)
 
   all_concepts = list(set(flatten([cs + [tc] for tc, cs in new_pairs_to_test])))
