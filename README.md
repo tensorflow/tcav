@@ -108,6 +108,8 @@ tcav/tcav_examples/discrete/kdd99_discrete_example.ipynb.
 
 `python -m tcav.cav_test`
 
+`python -m tcav.model_test`
+
 `python -m tcav.tcav_test`
 
 `python -m tcav.utils_test`

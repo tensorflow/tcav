@@ -20,6 +20,9 @@ from tensorflow.python.platform import googletest
 from tcav.model import ModelWrapper
 
 
+tf.compat.v1.disable_eager_execution()
+
+
 class ModelTest_model(ModelWrapper):
   """A mock model of model class for ModelTest class."""
 
