@@ -95,6 +95,7 @@ class TCAV(object):
               mymodel, np.expand_dims(class_acts[i], 0),
               cav, concept, class_id, examples[i]),
           range(len(class_acts)))
+      pool.close()
       return sum(directions) / float(len(class_acts))
     else:
       for i in range(len(class_acts)):
@@ -218,6 +219,7 @@ class TCAV(object):
           self.params), 1):
         tf.compat.v1.logging.info('Finished running param %s of %s' % (i, len(self.params)))
         results.append(res)
+      pool.close()
     else:
       for i, param in enumerate(self.params):
         tf.compat.v1.logging.info('Running param %s of %s' % (i, len(self.params)))

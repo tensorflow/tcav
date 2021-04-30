@@ -189,6 +189,7 @@ class ImageActivationGenerator(ActivationGeneratorBase):
       imgs = pool.map(
           lambda filename: self.load_image_from_file(filename, shape),
           filenames[:max_imgs])
+      pool.close()
       imgs = [img for img in imgs if img is not None]
       if len(imgs) <= 1:
         raise ValueError(
