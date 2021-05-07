@@ -49,7 +49,7 @@ import tensorflow as tf
 import socket
 import random
 
-kImagenetBaseUrl = "http://imagenet.stanford.edu/api/text/imagenet.synset.geturls?wnid="
+kImagenetBaseUrl = "http://imagenet.stanford.edu/api/imagenet.synset.geturls?wnid="
 kBrodenTexturesPath = "broden1_224/images/dtd/"
 kMinFileSize = 10000
 
@@ -126,7 +126,7 @@ def fetch_all_urls_for_concept(imagenet_dataframe, concept):
     bytes = urllib.request.urlopen(all_images)
     all_urls = []
     for line in bytes:
-      all_urls.append(line.decode("utf-8"))
+      all_urls.append(line.decode("utf-8")[:-2])
     return all_urls
   else:
     raise tf.errors.NotFoundError(
