@@ -225,12 +225,9 @@ class TcavTest(googletest.TestCase):
     self.assertEqual(sorted(my_relative_tcav.all_concepts),
                      sorted(['t1', 'c1', 'c2', 'c3']))
     self.assertEqual(sorted(my_relative_tcav.pairs_to_test),
-                     sorted([('t1',['c1', 'c2']),
-                             ('t1',['c1', 'c3']),
-                             ('t1',['c2', 'c1']),
-                             ('t1',['c2', 'c3']),
-                             ('t1',['c3', 'c1']),
-                             ('t1',['c3', 'c2']),
+                     sorted([('t1',['c1', 'c2:c3']),
+                             ('t1',['c2', 'c1:c3']),
+                             ('t1',['c3', 'c1:c2']),
                              ]))
 
   def test_get_params(self):

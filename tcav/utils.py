@@ -26,6 +26,7 @@ _KEYS = [
 ]
 
 MAX_RANDOM_EXPERIMENTS = 100
+CONCEPT_SEPARATOR = ':'
 
 
 def create_session(timeout=10000, interactive=True):
@@ -56,7 +57,8 @@ def flatten(nested_list):
 def process_what_to_run_expand(pairs_to_test,
                                random_counterpart=None,
                                num_random_exp=100,
-                               random_concepts=None):
+                               random_concepts=None,
+                               relative_tcav=False):
   """Get concept vs. random or random vs. random pairs to run.
 
     Given set of target, list of concept pairs, expand them to include
@@ -95,17 +97,30 @@ def process_what_to_run_expand(pairs_to_test,
           new_pairs_to_test_t.append((target, [concept_set[0], get_random_concept(i)]))
         i += 1
     elif len(concept_set) > 1:
-      new_pairs_to_test_t.append((target, concept_set))
+      if relative_tcav:
+        for concept in concept_set:
+          negative_set = CONCEPT_SEPARATOR.join(np.setdiff1d(concept_set, concept))  # c2:c3:... excluding c_i where i=j
+          new_pairs_to_test_t.append((target, [concept, negative_set]))
+      else:
+        new_pairs_to_test_t.append((target, concept_set))
     else:
       tf.compat.v1.logging.info('PAIR NOT PROCESSED')
     new_pairs_to_test.extend(new_pairs_to_test_t)
 
-  all_concepts = list(set(flatten([cs + [tc] for tc, cs in new_pairs_to_test])))
+  if relative_tcav:
+    all_concepts = []
+    for tc, cs in new_pairs_to_test:
+      all_concepts.append([tc])
+      for c in cs:
+        all_concepts.append(c.split(':'))
+    all_concepts = list(set(flatten(all_concepts)))
+  else:
+    all_concepts = list(set(flatten([cs + [tc] for tc, cs in new_pairs_to_test])))
 
   return all_concepts, new_pairs_to_test
 
 
-def process_what_to_run_concepts(pairs_to_test):
+def process_what_to_run_concepts(pairs_to_test, relative_tcav=False):
   """Process concepts and pairs to test.
 
   Args:
@@ -124,10 +139,15 @@ def process_what_to_run_concepts(pairs_to_test):
   """
 
   pairs_for_sstesting = []
-  # prepare pairs for concpet vs random.
-  for pair in pairs_to_test:
-    for concept in pair[1]:
-      pairs_for_sstesting.append([pair[0], [concept]])
+  if relative_tcav:
+    # keep things as is
+    return pairs_to_test
+  else:
+    # prepare pairs for concpet vs random.
+    for target, concept_set in pairs_to_test:
+      for concept in concept_set:
+        pairs_for_sstesting.append([target, [concept]])
+
   return pairs_for_sstesting
 
 

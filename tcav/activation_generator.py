@@ -25,12 +25,13 @@ import numpy as np
 import PIL.Image
 import six
 import tensorflow as tf
+from .utils import CONCEPT_SEPARATOR
 
 class ActivationGeneratorInterface(six.with_metaclass(ABCMeta, object)):
   """Interface for an activation generator for a model"""
 
   @abstractmethod
-  def process_and_load_activations(self, bottleneck_names, concepts):
+  def process_and_load_activations(self, bottleneck_names, concepts, relative_tcav=False):
     pass
 
   @abstractmethod
@@ -53,15 +54,15 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
   def get_examples_for_concept(self, concept):
     pass
 
-  def get_activations_for_concept(self, concept, bottleneck):
-    examples = self.get_examples_for_concept(concept)
+  def get_activations_for_concept(self, concept, bottleneck, relative_tcav=False):
+    examples = self.get_examples_for_concept(concept, relative_tcav)
     return self.get_activations_for_examples(examples, bottleneck)
 
   def get_activations_for_examples(self, examples, bottleneck):
     acts = self.model.run_examples(examples, bottleneck)
     return self.model.reshape_activations(acts).squeeze()
 
-  def process_and_load_activations(self, bottleneck_names, concepts):
+  def process_and_load_activations(self, bottleneck_names, concepts, relative_tcav=False):
     acts = {}
     if self.acts_dir and not tf.io.gfile.exists(self.acts_dir):
       tf.io.gfile.makedirs(self.acts_dir)
@@ -70,8 +71,10 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
       if concept not in acts:
         acts[concept] = {}
 
+      # convert concept name to filesystem friendly version
+      concept_filename = concept.replace(CONCEPT_SEPARATOR, "-")
       for bottleneck_name in bottleneck_names:
-        acts_path = os.path.join(self.acts_dir, f'acts_{concept}_{bottleneck_name}') if self.acts_dir else None
+        acts_path = os.path.join(self.acts_dir, f'acts_{concept_filename}_{bottleneck_name}') if self.acts_dir else None
 
         if acts_path and tf.io.gfile.exists(acts_path):
           # load activations from file
@@ -80,7 +83,7 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
             tf.compat.v1.logging.info(f'Loaded {acts_path} shape {acts[concept][bottleneck_name].shape}')
         else:
           # compute and save activations
-          acts[concept][bottleneck_name] = self.get_activations_for_concept(concept, bottleneck_name)
+          acts[concept][bottleneck_name] = self.get_activations_for_concept(concept, bottleneck_name, relative_tcav)
 
           if acts_path:
             tf.compat.v1.logging.info(f'{acts_path} does not exist, Making one...')
@@ -111,11 +114,19 @@ class ImageActivationGenerator(ActivationGeneratorBase):
     super(ImageActivationGenerator, self).__init__(model, acts_dir,
                                                    max_examples)
 
-  def get_examples_for_concept(self, concept):
-    concept_dir = os.path.join(self.source_dir, concept)
-    img_paths = [
-        os.path.join(concept_dir, d) for d in tf.io.gfile.listdir(concept_dir)
-    ]
+  def get_examples_for_concept(self, concept_names, relative_cav=False):
+    if relative_cav:
+      concepts = concept_names.split(CONCEPT_SEPARATOR)
+    else:
+      concepts = [concept_names]
+
+    img_paths = []
+    for concept in concepts:
+      concept_dir = os.path.join(self.source_dir, concept)
+      img_paths.append(
+          [os.path.join(concept_dir, d) for d in tf.io.gfile.listdir(concept_dir)]
+      )
+    img_paths = np.asarray(img_paths).flatten()
     imgs = self.load_images_from_files(
         img_paths, self.max_examples, shape=self.model.get_image_shape()[:2])
     return imgs
