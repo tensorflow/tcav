@@ -25,6 +25,8 @@ _KEYS = [
     "val_directional_dirs_std", "note", "alpha", "bottleneck"
 ]
 
+MAX_RANDOM_EXPERIMENTS = 100
+
 
 def create_session(timeout=10000, interactive=True):
   """Create a tf session for the model.
@@ -87,17 +89,15 @@ def process_what_to_run_expand(pairs_to_test,
     # if only one element was given, this is to test with random.
     if len(concept_set) == 1:
       i = 0
-      while len(new_pairs_to_test_t) < min(100, num_random_exp):
+      while len(new_pairs_to_test_t) < min(MAX_RANDOM_EXPERIMENTS, num_random_exp):  # fixme: why max 100? magic number
         # make sure that we are not comparing the same thing to each other.
-        if concept_set[0] != get_random_concept(
-            i) and random_counterpart != get_random_concept(i):
-          new_pairs_to_test_t.append(
-              (target, [concept_set[0], get_random_concept(i)]))
+        if concept_set[0] != get_random_concept(i) and random_counterpart != get_random_concept(i):
+          new_pairs_to_test_t.append((target, [concept_set[0], get_random_concept(i)]))
         i += 1
     elif len(concept_set) > 1:
       new_pairs_to_test_t.append((target, concept_set))
     else:
-      tf.compat.v1.logging.info('PAIR NOT PROCCESSED')
+      tf.compat.v1.logging.info('PAIR NOT PROCESSED')
     new_pairs_to_test.extend(new_pairs_to_test_t)
 
   all_concepts = list(set(flatten([cs + [tc] for tc, cs in new_pairs_to_test])))
