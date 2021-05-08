@@ -16,7 +16,7 @@ from __future__ import division
 from __future__ import print_function
 from tensorflow.python.platform import googletest
 from tcav.tcav_results.results_pb2 import Result, Results
-from tcav.utils import flatten, process_what_to_run_expand, process_what_to_run_concepts, process_what_to_run_randoms, results_to_proto
+from tcav.utils import flatten, process_what_to_run_expand, process_what_to_run_concepts, process_what_to_run_randoms, results_to_proto, MAX_RANDOM_EXPERIMENTS
 
 
 class UtilsTest(googletest.TestCase):
@@ -41,6 +41,21 @@ class UtilsTest(googletest.TestCase):
         sorted([('t1', ['c1', 'random500_0']), ('t1', ['c1', 'random500_1']),
                 ('t1', ['c2', 'random500_0']),
                 ('t1', ['c2', 'random500_1'])]))
+
+  def test_process_what_to_run_expand_max_experiments(self):
+    num_random_exp = MAX_RANDOM_EXPERIMENTS + 2  # just add some number to be bigger than max value
+    all_concepts, pairs_to_test = process_what_to_run_expand(
+        self.pair_to_test_one_concept,
+        num_random_exp=num_random_exp)
+
+    concepts = ['c1', 'c2']
+    expected_max_size = MAX_RANDOM_EXPERIMENTS
+    self.assertEqual(
+        sorted(all_concepts),
+        sorted(['t1'] + concepts + [f'random500_{i}' for i in range(expected_max_size)]))
+
+    # expect max experiments =  num_concepts * expected_max_size
+    self.assertEqual(len(pairs_to_test), len(concepts*MAX_RANDOM_EXPERIMENTS))
 
   def test_process_what_to_run_expand_specify_dirs(self):
     all_concepts, pairs_to_test = process_what_to_run_expand(
