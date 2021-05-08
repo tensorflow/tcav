@@ -69,24 +69,25 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
     for concept in concepts:
       if concept not in acts:
         acts[concept] = {}
+
       for bottleneck_name in bottleneck_names:
-        acts_path = os.path.join(self.acts_dir, 'acts_{}_{}'.format(
-            concept, bottleneck_name)) if self.acts_dir else None
+        acts_path = os.path.join(self.acts_dir, f'acts_{concept}_{bottleneck_name}') if self.acts_dir else None
+
         if acts_path and tf.io.gfile.exists(acts_path):
+          # load activations from file
           with tf.io.gfile.GFile(acts_path, 'rb') as f:
-            acts[concept][bottleneck_name] = np.load(
-                f, allow_pickle=True).squeeze()
-            tf.compat.v1.logging.info('Loaded {} shape {}'.format(
-                acts_path, acts[concept][bottleneck_name].shape))
+            acts[concept][bottleneck_name] = np.load(f, allow_pickle=True).squeeze()
+            tf.compat.v1.logging.info(f'Loaded {acts_path} shape {acts[concept][bottleneck_name].shape}')
         else:
-          acts[concept][bottleneck_name] = self.get_activations_for_concept(
-              concept, bottleneck_name)
+          # compute and save activations
+          acts[concept][bottleneck_name] = self.get_activations_for_concept(concept, bottleneck_name)
+
           if acts_path:
-            tf.compat.v1.logging.info(
-                '{} does not exist, Making one...'.format(acts_path))
+            tf.compat.v1.logging.info(f'{acts_path} does not exist, Making one...')
             tf.io.gfile.mkdir(os.path.dirname(acts_path))
             with tf.io.gfile.GFile(acts_path, 'w') as f:
               np.save(f, acts[concept][bottleneck_name], allow_pickle=False)
+
     return acts
 
 

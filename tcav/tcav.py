@@ -210,22 +210,20 @@ class TCAV(object):
     # pool worker 50 seems to work.
     tf.compat.v1.logging.info('running %s params' % len(self.params))
     results = []
-    now = time.time()
+    begin = time.time()
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
-      for i, res in enumerate(pool.imap(
-          lambda p: self._run_single_set(
-            p, overwrite=overwrite, run_parallel=run_parallel),
-          self.params), 1):
+      results = pool.imap(lambda p: self._run_single_set(p, overwrite=overwrite, run_parallel=run_parallel), self.params)
+      for i, res in enumerate(results, 1):
         tf.compat.v1.logging.info('Finished running param %s of %s' % (i, len(self.params)))
-        results.append(res)
       pool.close()
     else:
-      for i, param in enumerate(self.params):
+      for i, param in enumerate(self.params, 1):
         tf.compat.v1.logging.info('Running param %s of %s' % (i, len(self.params)))
         results.append(self._run_single_set(param, overwrite=overwrite, run_parallel=run_parallel))
-    tf.compat.v1.logging.info('Done running %s params. Took %s seconds...' % (len(
-        self.params), time.time() - now))
+
+    tf.compat.v1.logging.info('Done running %s params. Took %s seconds...' % (len(self.params), time.time() - begin))
+
     if return_proto:
       return utils.results_to_proto(results)
     else:
@@ -336,14 +334,14 @@ class TCAV(object):
 
     # take away 1 random experiment if the random counterpart already in random concepts
     # take away 1 random experiment if computing Relative TCAV
-    all_concepts_concepts, pairs_to_run_concepts = (
-        utils.process_what_to_run_expand(
-            utils.process_what_to_run_concepts(target_concept_pairs),
-            self.random_counterpart,
-            num_random_exp=num_random_exp -
-            (1 if random_concepts and self.random_counterpart in random_concepts
-             else 0) - (1 if self.relative_tcav else 0),
-            random_concepts=random_concepts))
+
+    random_exp_count = num_random_exp - (1 if random_concepts and self.random_counterpart in random_concepts else 0) - (1 if self.relative_tcav else 0)
+
+    all_concepts_concepts, pairs_to_run_concepts = utils.process_what_to_run_expand(
+        utils.process_what_to_run_concepts(target_concept_pairs),
+        self.random_counterpart,
+        num_random_exp=random_exp_count,
+        random_concepts=random_concepts)
 
     pairs_to_run_randoms = []
     all_concepts_randoms = []
