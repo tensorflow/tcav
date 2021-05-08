@@ -221,8 +221,7 @@ class TcavTest(googletest.TestCase):
                             self.act_gen,
                             [self.hparams['alpha']],
                             random_concepts=concepts_relative)
-    self.mytcav_random_counterpart._process_what_to_run_expand(
-        num_random_exp=2, random_concepts=concepts_relative)
+
     self.assertEqual(sorted(my_relative_tcav.all_concepts),
                      sorted(['t1', 'c1', 'c2', 'c3']))
     self.assertEqual(sorted(my_relative_tcav.pairs_to_test),
