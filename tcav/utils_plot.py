@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 
 # helper function to output plot and write summary data
 def plot_results(results, random_counterpart=None, random_concepts=None, num_random_exp=100,
-    min_p_val=0.05, fig_path=None, result_path=None, relative_tcav=False):
+                 min_p_val=0.05, fig_path=None, result_path=None, is_relative_tcav=False):
   """Helper function to organize results.
   When run in a notebook, outputs a matplotlib bar plot of the
   TCAV scores for all bottlenecks for each concept, replacing the
@@ -122,7 +122,7 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
             np.std(random_i_ups[bottleneck]), p_val,
             "not significant" if p_val > min_p_val else "significant"), file=result_outfile)
     # if relative tcav
-    elif relative_tcav:
+    elif is_relative_tcav:
       # relative TCAV; c_1 -> c_2 U c_3; c_2 -> c_1 U c_3, ...
       print(" ", "Concept =", concept, file=result_outfile)
       plot_concepts.append(concept)
@@ -141,7 +141,7 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
             bottleneck, np.mean(i_ups), np.std(i_ups)), file=result_outfile)
         
   # subtract number of random experiments
-  if relative_tcav:
+  if is_relative_tcav:
     num_concepts = len(result_summary)
   elif random_counterpart:
     num_concepts = len(result_summary) - 1

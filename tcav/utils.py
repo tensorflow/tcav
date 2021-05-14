@@ -58,7 +58,7 @@ def process_what_to_run_expand(pairs_to_test,
                                random_counterpart=None,
                                num_random_exp=100,
                                random_concepts=None,
-                               relative_tcav=False):
+                               is_relative_tcav=False):
   """Get concept vs. random or random vs. random pairs to run.
 
     Given set of target, list of concept pairs, expand them to include
@@ -97,7 +97,7 @@ def process_what_to_run_expand(pairs_to_test,
           new_pairs_to_test_t.append((target, [concept_set[0], get_random_concept(i)]))
         i += 1
     elif len(concept_set) > 1:
-      if relative_tcav:
+      if is_relative_tcav:
         for concept in concept_set:
           negative_set = CONCEPT_SEPARATOR.join(np.setdiff1d(concept_set, concept))  # c2:c3:... excluding c_i where i=j
           new_pairs_to_test_t.append((target, [concept, negative_set]))
@@ -107,7 +107,7 @@ def process_what_to_run_expand(pairs_to_test,
       tf.compat.v1.logging.info('PAIR NOT PROCESSED')
     new_pairs_to_test.extend(new_pairs_to_test_t)
 
-  if relative_tcav:
+  if is_relative_tcav:
     all_concepts = []
     for tc, cs in new_pairs_to_test:
       all_concepts.append([tc])
@@ -120,7 +120,7 @@ def process_what_to_run_expand(pairs_to_test,
   return all_concepts, new_pairs_to_test
 
 
-def process_what_to_run_concepts(pairs_to_test, relative_tcav=False):
+def process_what_to_run_concepts(pairs_to_test, is_relative_tcav=False):
   """Process concepts and pairs to test.
 
   Args:
@@ -139,7 +139,7 @@ def process_what_to_run_concepts(pairs_to_test, relative_tcav=False):
   """
 
   pairs_for_sstesting = []
-  if relative_tcav:
+  if is_relative_tcav:
     # keep things as is
     return pairs_to_test
   else:

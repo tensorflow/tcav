@@ -178,7 +178,7 @@ class TCAV(object):
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
     self.random_counterpart = random_counterpart
-    self.relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
+    self.is_relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
 
     if num_random_exp < 2:
         tf.compat.v1.logging.error('the number of random concepts has to be at least 2')
@@ -253,7 +253,7 @@ class TCAV(object):
 
     # Get acts
     acts = activation_generator.process_and_load_activations(
-        [bottleneck], concepts + [target_class], self.relative_tcav)
+        [bottleneck], concepts + [target_class], self.is_relative_tcav)
     # Get CAVs
     cav_hparams = CAV.default_hparams()
     cav_hparams['alpha'] = alpha
@@ -335,14 +335,14 @@ class TCAV(object):
     # take away 1 random experiment if the random counterpart already in random concepts
     # take away 1 random experiment if computing Relative TCAV
 
-    random_exp_count = num_random_exp - (1 if random_concepts and self.random_counterpart in random_concepts else 0) - (1 if self.relative_tcav else 0)
+    random_exp_count = num_random_exp - (1 if random_concepts and self.random_counterpart in random_concepts else 0) - (1 if self.is_relative_tcav else 0)
 
     all_concepts_concepts, pairs_to_run_concepts = utils.process_what_to_run_expand(
-        utils.process_what_to_run_concepts(target_concept_pairs, self.relative_tcav),
+        utils.process_what_to_run_concepts(target_concept_pairs, self.is_relative_tcav),
         self.random_counterpart,
         num_random_exp=random_exp_count,
         random_concepts=random_concepts,
-        relative_tcav=self.relative_tcav,
+        is_relative_tcav=self.is_relative_tcav,
     )
 
     pairs_to_run_randoms = []
@@ -353,7 +353,7 @@ class TCAV(object):
       return (random_concepts[i] if random_concepts
               else 'random500_{}'.format(i))
 
-    if self.random_counterpart is None and not self.relative_tcav:
+    if self.random_counterpart is None and not self.is_relative_tcav:
       # TODO random500_1 vs random500_0 is the same as 1 - (random500_0 vs random500_1)
       for i in range(num_random_exp):
         all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
@@ -366,7 +366,7 @@ class TCAV(object):
         pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)
         all_concepts_randoms.extend(all_concepts_randoms_tmp)
 
-    elif not self.relative_tcav:
+    elif not self.is_relative_tcav:
       # run only random_counterpart as the positve set for random experiments
       all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
           utils.process_what_to_run_expand(
@@ -385,7 +385,7 @@ class TCAV(object):
       pass
 
     self.all_concepts = list(set(all_concepts_concepts + all_concepts_randoms))
-    self.pairs_to_test = pairs_to_run_concepts if self.relative_tcav else pairs_to_run_concepts + pairs_to_run_randoms
+    self.pairs_to_test = pairs_to_run_concepts if self.is_relative_tcav else pairs_to_run_concepts + pairs_to_run_randoms
 
   def get_params(self):
     """Enumerate parameters for the run function.

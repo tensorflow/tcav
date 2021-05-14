@@ -31,7 +31,7 @@ class ActivationGeneratorInterface(six.with_metaclass(ABCMeta, object)):
   """Interface for an activation generator for a model"""
 
   @abstractmethod
-  def process_and_load_activations(self, bottleneck_names, concepts, relative_tcav=False):
+  def process_and_load_activations(self, bottleneck_names, concepts, is_relative_tcav=False):
     pass
 
   @abstractmethod
@@ -54,15 +54,15 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
   def get_examples_for_concept(self, concept):
     pass
 
-  def get_activations_for_concept(self, concept, bottleneck, relative_tcav=False):
-    examples = self.get_examples_for_concept(concept, relative_tcav)
+  def get_activations_for_concept(self, concept, bottleneck, is_relative_tcav=False):
+    examples = self.get_examples_for_concept(concept, is_relative_tcav)
     return self.get_activations_for_examples(examples, bottleneck)
 
   def get_activations_for_examples(self, examples, bottleneck):
     acts = self.model.run_examples(examples, bottleneck)
     return self.model.reshape_activations(acts).squeeze()
 
-  def process_and_load_activations(self, bottleneck_names, concepts, relative_tcav=False):
+  def process_and_load_activations(self, bottleneck_names, concepts, is_relative_tcav=False):
     acts = {}
     if self.acts_dir and not tf.io.gfile.exists(self.acts_dir):
       tf.io.gfile.makedirs(self.acts_dir)
@@ -83,7 +83,7 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
             tf.compat.v1.logging.info(f'Loaded {acts_path} shape {acts[concept][bottleneck_name].shape}')
         else:
           # compute and save activations
-          acts[concept][bottleneck_name] = self.get_activations_for_concept(concept, bottleneck_name, relative_tcav)
+          acts[concept][bottleneck_name] = self.get_activations_for_concept(concept, bottleneck_name, is_relative_tcav)
 
           if acts_path:
             tf.compat.v1.logging.info(f'{acts_path} does not exist, Making one...')
@@ -114,8 +114,8 @@ class ImageActivationGenerator(ActivationGeneratorBase):
     super(ImageActivationGenerator, self).__init__(model, acts_dir,
                                                    max_examples)
 
-  def get_examples_for_concept(self, concept_names, relative_cav=False):
-    if relative_cav:
+  def get_examples_for_concept(self, concept_names, is_relative_tcav=False):
+    if is_relative_tcav:
       concepts = concept_names.split(CONCEPT_SEPARATOR)
     else:
       concepts = [concept_names]
