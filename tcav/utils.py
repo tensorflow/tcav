@@ -26,7 +26,7 @@ _KEYS = [
 ]
 
 MAX_RANDOM_EXPERIMENTS = 100
-CONCEPT_SEPARATOR = ':'
+CONCEPT_SEPARATOR = '+'
 
 
 def create_session(timeout=10000, interactive=True):

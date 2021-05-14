@@ -71,10 +71,8 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
       if concept not in acts:
         acts[concept] = {}
 
-      # convert concept name to filesystem friendly version
-      concept_filename = concept.replace(CONCEPT_SEPARATOR, "-")
       for bottleneck_name in bottleneck_names:
-        acts_path = os.path.join(self.acts_dir, f'acts_{concept_filename}_{bottleneck_name}') if self.acts_dir else None
+        acts_path = os.path.join(self.acts_dir, f'acts_{concept}_{bottleneck_name}') if self.acts_dir else None
 
         if acts_path and tf.io.gfile.exists(acts_path):
           # load activations from file
