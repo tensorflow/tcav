@@ -112,7 +112,7 @@ def process_what_to_run_expand(pairs_to_test,
     for tc, cs in new_pairs_to_test:
       all_concepts.append([tc])
       for c in cs:
-        all_concepts.append(c.split(':'))
+        all_concepts.append(c.split(CONCEPT_SEPARATOR))
     all_concepts = list(set(flatten(all_concepts)))
   else:
     all_concepts = list(set(flatten([cs + [tc] for tc, cs in new_pairs_to_test])))
