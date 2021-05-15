@@ -50,7 +50,7 @@ class TcavTest_ActGen(ActivationGeneratorBase):
   def __init__(self, model):
     super(TcavTest_ActGen, self).__init__(model, None, 10)
 
-  def get_examples_for_concept(self, concept):
+  def get_examples_for_concept(self, concept, is_relative_tcav=False):
     return []
 
 class TcavTest(googletest.TestCase):

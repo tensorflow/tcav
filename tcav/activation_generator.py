@@ -51,7 +51,7 @@ class ActivationGeneratorBase(ActivationGeneratorInterface):
     return self.model
 
   @abstractmethod
-  def get_examples_for_concept(self, concept):
+  def get_examples_for_concept(self, concept, is_relative_tcav=False):
     pass
 
   def get_activations_for_concept(self, concept, bottleneck, is_relative_tcav=False):
@@ -125,8 +125,9 @@ class ImageActivationGenerator(ActivationGeneratorBase):
           [os.path.join(concept_dir, d) for d in tf.io.gfile.listdir(concept_dir)]
       )
     img_paths = np.asarray(img_paths).flatten()
+    image_shape = self.model.get_image_shape()[:2]
     imgs = self.load_images_from_files(
-        img_paths, self.max_examples, shape=self.model.get_image_shape()[:2])
+        img_paths, self.max_examples, shape=image_shape)
     return imgs
 
   def load_image_from_file(self, filename, shape):
@@ -229,7 +230,7 @@ class DiscreteActivationGeneratorBase(ActivationGeneratorBase):
     super(DiscreteActivationGeneratorBase, self).__init__(
         model=model, acts_dir=acts_dir, max_examples=max_examples)
 
-  def get_examples_for_concept(self, concept):
+  def get_examples_for_concept(self, concept, is_relative_tcav=False):
     """Extracts examples for a concept and transforms them to the desired format.
 
     Args:
@@ -243,6 +244,10 @@ class DiscreteActivationGeneratorBase(ActivationGeneratorBase):
             load_data() and transform_data() functions.
 
     """
+    if is_relative_tcav:
+      # Needs to be implemented
+      raise NotImplementedError()
+
     data = self.load_data(concept)
     data_parsed = self.transform_data(data)
     return data_parsed
