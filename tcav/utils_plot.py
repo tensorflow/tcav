@@ -188,3 +188,6 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
     plt.show()
   else:
     plt.savefig(fig_path, dpi=200)
+
+  # release resources
+  plt.close()
