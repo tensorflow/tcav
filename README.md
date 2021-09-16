@@ -1,4 +1,4 @@
-# Interpretability Beyond Feature Attribution: Quantitative Testing with Concept Activation Vectors (TCAV) [ICML 2018]
+# Interpretability Beyond Feature Attribution: Quantitative Testing with Concept Activation Vectors (TCAV) 
 
 Been Kim, Martin Wattenberg, Justin Gilmer, Carrie Cai, James Wexler, Fernanda
 Viegas, Rory Sayres
