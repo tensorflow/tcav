@@ -50,7 +50,7 @@ class TcavTest_ActGen(ActivationGeneratorBase):
   def __init__(self, model):
     super(TcavTest_ActGen, self).__init__(model, None, 10)
 
-  def get_examples_for_concept(self, concept):
+  def get_examples_for_concept(self, concept, is_relative_tcav=False):
     return []
 
 class TcavTest(googletest.TestCase):
@@ -221,17 +221,13 @@ class TcavTest(googletest.TestCase):
                             self.act_gen,
                             [self.hparams['alpha']],
                             random_concepts=concepts_relative)
-    self.mytcav_random_counterpart._process_what_to_run_expand(
-        num_random_exp=2, random_concepts=concepts_relative)
+
     self.assertEqual(sorted(my_relative_tcav.all_concepts),
                      sorted(['t1', 'c1', 'c2', 'c3']))
     self.assertEqual(sorted(my_relative_tcav.pairs_to_test),
-                     sorted([('t1',['c1', 'c2']),
-                             ('t1',['c1', 'c3']),
-                             ('t1',['c2', 'c1']),
-                             ('t1',['c2', 'c3']),
-                             ('t1',['c3', 'c1']),
-                             ('t1',['c3', 'c2']),
+                     sorted([('t1',['c1', 'c2+c3']),
+                             ('t1',['c2', 'c1+c3']),
+                             ('t1',['c3', 'c1+c2']),
                              ]))
 
   def test_get_params(self):

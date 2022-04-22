@@ -178,7 +178,7 @@ class TCAV(object):
     self.model_to_run = self.mymodel.model_name
     self.sess = sess
     self.random_counterpart = random_counterpart
-    self.relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
+    self.is_relative_tcav = (random_concepts is not None) and (set(concepts) == set(random_concepts))
 
     if num_random_exp < 2:
         tf.compat.v1.logging.error('the number of random concepts has to be at least 2')
@@ -210,22 +210,20 @@ class TCAV(object):
     # pool worker 50 seems to work.
     tf.compat.v1.logging.info('running %s params' % len(self.params))
     results = []
-    now = time.time()
+    begin = time.time()
     if run_parallel:
       pool = multiprocessing.Pool(num_workers)
-      for i, res in enumerate(pool.imap(
-          lambda p: self._run_single_set(
-            p, overwrite=overwrite, run_parallel=run_parallel),
-          self.params), 1):
+      results = pool.imap(lambda p: self._run_single_set(p, overwrite=overwrite, run_parallel=run_parallel), self.params)
+      for i, res in enumerate(results, 1):
         tf.compat.v1.logging.info('Finished running param %s of %s' % (i, len(self.params)))
-        results.append(res)
       pool.close()
     else:
-      for i, param in enumerate(self.params):
+      for i, param in enumerate(self.params, 1):
         tf.compat.v1.logging.info('Running param %s of %s' % (i, len(self.params)))
         results.append(self._run_single_set(param, overwrite=overwrite, run_parallel=run_parallel))
-    tf.compat.v1.logging.info('Done running %s params. Took %s seconds...' % (len(
-        self.params), time.time() - now))
+
+    tf.compat.v1.logging.info('Done running %s params. Took %s seconds...' % (len(self.params), time.time() - begin))
+
     if return_proto:
       return utils.results_to_proto(results)
     else:
@@ -255,7 +253,7 @@ class TCAV(object):
 
     # Get acts
     acts = activation_generator.process_and_load_activations(
-        [bottleneck], concepts + [target_class])
+        [bottleneck], concepts + [target_class], self.is_relative_tcav)
     # Get CAVs
     cav_hparams = CAV.default_hparams()
     cav_hparams['alpha'] = alpha
@@ -336,14 +334,16 @@ class TCAV(object):
 
     # take away 1 random experiment if the random counterpart already in random concepts
     # take away 1 random experiment if computing Relative TCAV
-    all_concepts_concepts, pairs_to_run_concepts = (
-        utils.process_what_to_run_expand(
-            utils.process_what_to_run_concepts(target_concept_pairs),
-            self.random_counterpart,
-            num_random_exp=num_random_exp -
-            (1 if random_concepts and self.random_counterpart in random_concepts
-             else 0) - (1 if self.relative_tcav else 0),
-            random_concepts=random_concepts))
+
+    random_exp_count = num_random_exp - (1 if random_concepts and self.random_counterpart in random_concepts else 0) - (1 if self.is_relative_tcav else 0)
+
+    all_concepts_concepts, pairs_to_run_concepts = utils.process_what_to_run_expand(
+        utils.process_what_to_run_concepts(target_concept_pairs, self.is_relative_tcav),
+        self.random_counterpart,
+        num_random_exp=random_exp_count,
+        random_concepts=random_concepts,
+        is_relative_tcav=self.is_relative_tcav,
+    )
 
     pairs_to_run_randoms = []
     all_concepts_randoms = []
@@ -353,7 +353,7 @@ class TCAV(object):
       return (random_concepts[i] if random_concepts
               else 'random500_{}'.format(i))
 
-    if self.random_counterpart is None:
+    if self.random_counterpart is None and not self.is_relative_tcav:
       # TODO random500_1 vs random500_0 is the same as 1 - (random500_0 vs random500_1)
       for i in range(num_random_exp):
         all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
@@ -366,7 +366,7 @@ class TCAV(object):
         pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)
         all_concepts_randoms.extend(all_concepts_randoms_tmp)
 
-    else:
+    elif not self.is_relative_tcav:
       # run only random_counterpart as the positve set for random experiments
       all_concepts_randoms_tmp, pairs_to_run_randoms_tmp = (
           utils.process_what_to_run_expand(
@@ -380,8 +380,12 @@ class TCAV(object):
       pairs_to_run_randoms.extend(pairs_to_run_randoms_tmp)
       all_concepts_randoms.extend(all_concepts_randoms_tmp)
 
+    else:
+      # relative cav, no random concepts
+      pass
+
     self.all_concepts = list(set(all_concepts_concepts + all_concepts_randoms))
-    self.pairs_to_test = pairs_to_run_concepts if self.relative_tcav else pairs_to_run_concepts + pairs_to_run_randoms
+    self.pairs_to_test = pairs_to_run_concepts if self.is_relative_tcav else pairs_to_run_concepts + pairs_to_run_randoms
 
   def get_params(self):
     """Enumerate parameters for the run function.
