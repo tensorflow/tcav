@@ -59,7 +59,8 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
     result_outfile = sys.stdout
 
   # print class, it will be the same for all
-  print("Class =", results[0]['target_class'], file=result_outfile)
+  target_class = results[0]['target_class']
+  print("Class =", target_class, file=result_outfile)
 
   # prepare data
   # dict with keys of concepts containing dict with bottlenecks
@@ -176,7 +177,7 @@ def plot_results(results, random_counterpart=None, random_concepts=None, num_ran
   print(plot_data, file=result_outfile)
 
   # set properties
-  ax.set_title('TCAV Scores for each concept and bottleneck')
+  ax.set_title(f"TCAV Scores for each concept and bottleneck, target: '{target_class}'")
   ax.set_ylabel('TCAV Score')
   ax.set_xticks(index + num_bottlenecks * bar_width / 2)
   ax.set_xticklabels(plot_concepts)
