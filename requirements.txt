@@ -1,8 +1,12 @@
+# first:
+# pip install tensorflow
+# pip intsall tcav 
+# then you should not need this file
 matplotlib==2.2.4
 Pillow==8.2.0
 scikit-learn==0.20.3
 scipy==1.2.1
-tensorflow==2.5.1
+tensorflow==2.5.0
 numpy==1.19.2
 protobuf==3.10.0
 pandas==1.0.3
