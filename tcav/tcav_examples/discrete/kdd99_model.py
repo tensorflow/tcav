@@ -20,6 +20,7 @@ import os
 import tensorflow as tf
 import argparse
 import numpy as np
+import h5py
 from sklearn.model_selection import train_test_split
 import sklearn.datasets
 from sklearn.preprocessing import OrdinalEncoder

@@ -1,0 +1,10 @@
+duration,protocol_type,service,flag,src_bytes,dst_bytes,land,wrong_fragment,urgent,hot,m_failed_logins,logged_in,num_compromised,root_shell,su_attempted,num_root,num_file_creations,num_shells,num_access_files,num_outbound_cmds,is_host_login,is_guest_login,count,srv_count,serror_rate,srv_serror_rate,rerror_rate,srv_rerror_rate,same_srv_rate,diff_srv_rate,srv_diff_host_rate,dst_host_count,dst_host_srv_count,dst_host_same_srv_rate,dst_host_diff_srv_rate,dst_host_same_src_port_rate,dst_host_srv_diff_host_rate,dst_host_serror_rate,dst_host_srv_serror_rate,dst_host_rerror_rate,dst_host_srv_rerror_rate,labels
+79,b'tcp',b'telnet',b'SF',281,1301,0,0,0,2,0,1,1,1,0,0,4,2,0,0,0,0,1,1,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1,10,1.0,0.0,1.0,0.3,0.0,0.0,0.0,0.1,b'loadmodule.'
+103,b'tcp',b'telnet',b'SF',302,8876,0,0,0,2,0,1,4,1,0,3,4,2,1,0,0,0,1,1,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1,1,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,b'loadmodule.'
+0,b'tcp',b'ftp_data',b'SF',0,5921,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,1,0.0,0.0,0.0,0.0,0.5,1.0,0.0,1,3,1.0,0.0,1.0,0.67,0.0,0.0,0.0,0.0,b'loadmodule.'
+0,b'tcp',b'ftp_data',b'SF',0,5014,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,2,0.0,0.0,0.0,0.0,0.67,0.67,0.0,2,4,1.0,0.0,1.0,0.5,0.0,0.0,0.0,0.0,b'loadmodule.'
+0,b'tcp',b'ftp_data',b'SF',0,2072,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,4,3,0.0,0.0,0.0,0.0,0.75,0.5,0.0,3,5,1.0,0.0,1.0,0.4,0.0,0.0,0.0,0.0,b'loadmodule.'
+7,b'tcp',b'ftp',b'SF',230,644,0,0,0,4,0,1,0,0,0,0,4,0,0,0,0,0,1,1,0.0,0.0,0.0,0.0,1.0,0.0,0.0,4,1,0.25,0.75,0.25,0.0,0.0,0.0,0.0,0.0,b'loadmodule.'
+31,b'tcp',b'telnet',b'SF',142,1278,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,1,0.0,0.0,0.0,0.0,1.0,0.0,0.0,5,3,0.6,0.6,0.2,0.0,0.0,0.0,0.0,0.0,b'loadmodule.'
+21,b'tcp',b'telnet',b'SF',135,1290,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0.0,0.0,0.0,0.0,1.0,0.0,0.0,6,4,0.67,0.5,0.17,0.0,0.0,0.0,0.0,0.0,b'loadmodule.'
+85,b'tcp',b'telnet',b'SF',277,693,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1,1,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,b'loadmodule.'
