@@ -57,7 +57,6 @@ def make_keras_model(categorical_map):
   for index in range(n_features):
     # For categorical variables, we create embedding layers
     if index in categorical_map.keys():
-      #print('>>> using categorical map <<<')
       vocab_size = categorical_map[index]
       inpt = deconcat[index]
       inputs.append(inpt)
@@ -68,7 +67,6 @@ def make_keras_model(categorical_map):
       embed_reshaped = tf.keras.layers.Reshape(target_shape=(200,))(embed)
       models.append(embed_reshaped)
     else:
-      #print('>>> NOT using categorical map <<<')
       # Else, create a simple input for numerical features
       inpt = deconcat[index]
       inputs.append(inpt)
@@ -78,12 +76,12 @@ def make_keras_model(categorical_map):
   merge_models = tf.keras.layers.concatenate(models)
 
   # Plug them into the DNN
-  net = tf.keras.layers.Dense(1000)(merge_models)
+  net = tf.keras.layers.Dense(1000)(merge_models) #  densely-connected NN layer
   net = tf.keras.layers.BatchNormalization()(net)
   net = tf.keras.layers.Dense(256)(net)
   net = tf.keras.layers.BatchNormalization()(net)
 
-  pred = tf.keras.layers.Dense(n_labels, activation='sigmoid')(net)
+  pred = tf.keras.layers.Dense(n_labels, activation='sigmoid')(net) # tror labels har noget med output/udfald at gøre
   model_full = tf.keras.models.Model(inputs=input_layer, \
                                      outputs=pred)
   model_full.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), \
@@ -95,7 +93,7 @@ def make_keras_model(categorical_map):
 def encode_variables(data):
   """ Encodes variables using simple ordinal encoding."""
   data2 = np.copy(data)
-  encoder = OrdinalEncoder()
+  encoder = OrdinalEncoder() # Encode categorical features as an integer array.
   categorical_indices = kBytesIndices
   data2[:,
         categorical_indices] = encoder.fit_transform(data2[:,
@@ -139,7 +137,9 @@ def prepare_dataset(labels_path):
 
 
 def train_and_save_model(model_path, labels_path):
-  """ Trains simple feedforward model for the KDD99 dataset"""
+  """ Trains simple feedforward model for the KDD99 dataset
+  feedforward model: information is only processed in one direction
+  """
   # Prepare dataset and split it
   data, labels = prepare_dataset(labels_path)
   train_data, test_data, train_labels, test_labels = train_test_split(
