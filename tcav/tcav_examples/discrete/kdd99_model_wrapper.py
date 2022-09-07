@@ -36,8 +36,8 @@ class KDD99KerasModelWrapper(KerasModelWrapper):
       raise Exception(
           "Labels path does not exist. Please provide a labels file.")
     # Train a model if we have none
-    if not tf.io.gfile.exists(model_path):
-      train_and_save_model(model_path, labels_path)
+    #if not tf.io.gfile.exists(model_path):
+    train_and_save_model(model_path, labels_path)
 
     # Initialize the wrapper
     super(KDD99KerasModelWrapper, self).__init__(sess, model_path, labels_path)

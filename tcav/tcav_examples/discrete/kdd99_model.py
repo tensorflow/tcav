@@ -20,7 +20,8 @@ import os
 import tensorflow as tf
 import argparse
 import numpy as np
-import h5py
+from tensorflow import keras
+#import h5py
 from sklearn.model_selection import train_test_split
 import sklearn.datasets
 from sklearn.preprocessing import OrdinalEncoder
@@ -56,6 +57,7 @@ def make_keras_model(categorical_map):
   for index in range(n_features):
     # For categorical variables, we create embedding layers
     if index in categorical_map.keys():
+      #print('>>> using categorical map <<<')
       vocab_size = categorical_map[index]
       inpt = deconcat[index]
       inputs.append(inpt)
@@ -66,6 +68,7 @@ def make_keras_model(categorical_map):
       embed_reshaped = tf.keras.layers.Reshape(target_shape=(200,))(embed)
       models.append(embed_reshaped)
     else:
+      #print('>>> NOT using categorical map <<<')
       # Else, create a simple input for numerical features
       inpt = deconcat[index]
       inputs.append(inpt)
@@ -153,7 +156,11 @@ def train_and_save_model(model_path, labels_path):
       validation_data=(test_data, test_labels),
       epochs=4,
       batch_size=64)
-  model.save(model_path)
+  #model.save(model_path) #,save_format='h5') # dobbelt tilføjelse 
+  tf.keras.models.save_model(
+    model,
+    model_path
+  )
 
   # Test on a small subset of predictions
   predictions = model.predict(test_data[:10])
